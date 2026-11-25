@@ -1,0 +1,1354 @@
+<title>reiro TOEFL Drill</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* レイアウト: スマホ幅の1カラムアプリ。上に固定ヘッダー、下に4タブ。PC では中央に 480px で置く */
+:root {
+  --bg: #eef1f7;
+  --surface: #ffffff;
+  --surface-2: #f6f8fc;
+  --ink: #131a2b;
+  --muted: #5a6479;
+  --line: #dce1ec;
+  --accent: #2f5bd3;
+  --accent-ink: #ffffff;
+  --accent-soft: #e5ebfb;
+  --good: #1b8657;
+  --good-soft: #e2f4ea;
+  --bad: #c0392f;
+  --bad-soft: #fbe7e5;
+  --warn: #a8701a;
+  --warn-soft: #fbf0dc;
+  --font-ui: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+  --font-text: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --radius: 14px;
+  --tabbar: 64px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1119; --surface: #161b27; --surface-2: #1b2130; --ink: #e6e9f1; --muted: #97a0b4;
+    --line: #283044; --accent: #87a3ff; --accent-ink: #0d1119; --accent-soft: #1d2846;
+    --good: #52c58f; --good-soft: #15291f; --bad: #ff7f75; --bad-soft: #321a19; --warn: #e2ae4f; --warn-soft: #2e2414;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1119; --surface: #161b27; --surface-2: #1b2130; --ink: #e6e9f1; --muted: #97a0b4;
+  --line: #283044; --accent: #87a3ff; --accent-ink: #0d1119; --accent-soft: #1d2846;
+  --good: #52c58f; --good-soft: #15291f; --bad: #ff7f75; --bad-soft: #321a19; --warn: #e2ae4f; --warn-soft: #2e2414;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 15px; line-height: 1.6;
+  -webkit-tap-highlight-color: transparent;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--surface); }
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.shell { max-width: 480px; margin: 0 auto; min-height: 100%; background: var(--bg); position: relative; }
+@media (min-width: 560px) { .shell { border-inline: 1px solid var(--line); } }
+
+header.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.top-row { height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.brand { font-weight: 700; letter-spacing: .01em; display: flex; align-items: center; gap: 8px; }
+.brand-mark { width: 26px; height: 26px; border-radius: 7px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-size: 14px; font-weight: 700; }
+.demo-pill { font-size: 11px; font-weight: 700; letter-spacing: .08em; color: var(--warn); background: var(--warn-soft); padding: 2px 8px; border-radius: 99px; }
+.back { background: none; border: 0; padding: 6px 0; color: var(--accent); font-weight: 500; display: flex; align-items: center; gap: 4px; }
+
+main.view {
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 16px calc(var(--tabbar) + 24px + env(safe-area-inset-bottom, 0px));
+  display: grid; gap: 14px;
+}
+nav.tabs {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 20; background: var(--surface); border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);
+}
+nav.tabs .inner { max-width: 480px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); height: var(--tabbar); }
+nav.tabs button { background: none; border: 0; display: grid; place-items: center; align-content: center; gap: 2px; font-size: 11px; font-weight: 500; color: var(--muted); }
+nav.tabs button[aria-current="page"] { color: var(--accent); }
+nav.tabs svg { width: 24px; height: 24px; }
+
+h1 { font-size: 20px; line-height: 1.35; margin: 0; text-wrap: balance; }
+h2 { font-size: 13px; margin: 0 0 8px; color: var(--muted); font-weight: 700; letter-spacing: .04em; }
+h3 { font-size: 16px; margin: 0; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.small { font-size: 12.5px; }
+.num { font-variant-numeric: tabular-nums; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 10px; min-width: 0; }
+.card.flat { background: transparent; border-style: dashed; }
+.row { display: flex; align-items: center; gap: 10px; }
+.between { justify-content: space-between; }
+.wrap { flex-wrap: wrap; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stack { display: grid; gap: 10px; }
+
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 11px 16px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.ghost { background: transparent; }
+.btn.block { width: 100%; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.sm { min-height: 36px; padding: 6px 12px; font-size: 13px; border-radius: 10px; }
+.chip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 99px; background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
+.chip.good { color: var(--good); background: var(--good-soft); border-color: transparent; }
+.chip.bad { color: var(--bad); background: var(--bad-soft); border-color: transparent; }
+.chip.warn { color: var(--warn); background: var(--warn-soft); border-color: transparent; }
+.chip.accent { color: var(--accent); background: var(--accent-soft); border-color: transparent; }
+.sec-badge { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-weight: 700; background: var(--accent-soft); color: var(--accent); flex: none; }
+
+/* ホーム */
+.hero-count { display: flex; align-items: baseline; gap: 6px; }
+.hero-count b { font-size: 44px; line-height: 1; font-variant-numeric: tabular-nums; }
+.score-rows { display: grid; gap: 12px; }
+.score-row { display: grid; grid-template-columns: 92px 1fr auto; align-items: center; gap: 10px; }
+.bar { position: relative; height: 10px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 99px; }
+.bar .fill { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 99px; }
+.bar .target { position: absolute; top: -5px; bottom: -5px; width: 2px; background: var(--ink); border-radius: 2px; }
+.gap-neg { color: var(--bad); font-weight: 700; }
+.gap-ok { color: var(--good); font-weight: 700; }
+.next-card { background: var(--accent); color: var(--accent-ink); border: 0; }
+.next-card .muted { color: inherit; opacity: .8; }
+.next-card .btn { background: var(--accent-ink); color: var(--accent); border: 0; }
+.progress { height: 8px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; }
+.progress > i { display: block; height: 100%; background: var(--good); }
+.weak li { display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.weak li:last-child { border-bottom: 0; }
+ul.plain { list-style: none; margin: 0; padding: 0; }
+.chart svg { width: 100%; height: auto; display: block; }
+
+/* 演習 */
+.list-btn { width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; display: flex; align-items: center; gap: 12px; }
+.list-btn .t { flex: 1; min-width: 0; }
+.list-btn .t b { display: block; }
+.chev { color: var(--muted); }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; background: var(--surface-2); padding: 4px; border-radius: 12px; border: 1px solid var(--line); }
+.seg button { border: 0; background: transparent; border-radius: 9px; padding: 8px 4px; font-weight: 700; font-size: 13px; color: var(--muted); line-height: 1.3; }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgb(0 0 0 / .12); }
+.seg small { display: block; font-weight: 500; font-size: 11px; }
+.field { display: grid; gap: 6px; }
+.field label { font-weight: 700; font-size: 13px; }
+.input { width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 10px 12px; min-height: 44px; }
+textarea.input { min-height: 220px; resize: vertical; font-family: var(--font-text); font-size: 16px; line-height: 1.6; }
+.switch { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.toggle { flex: none; width: 50px; height: 30px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface-2); position: relative; }
+.toggle::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: var(--muted); transition: transform .15s; }
+.toggle[aria-checked="true"] { background: var(--accent); border-color: var(--accent); }
+.toggle[aria-checked="true"]::after { transform: translateX(20px); background: var(--accent-ink); }
+
+.playbar { position: sticky; top: calc(52px + env(safe-area-inset-top, 0px)); z-index: 10; margin: -16px calc(-1 * max(16px, env(safe-area-inset-left, 0px))) 0; padding: 8px max(16px, env(safe-area-inset-left, 0px)); background: var(--bg); border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.timer { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 17px; }
+.timer.over { color: var(--bad); }
+.passage { font-family: var(--font-text); font-size: 16.5px; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
+.passage-title { font-family: var(--font-text); font-weight: 600; font-size: 18px; }
+.q { display: grid; gap: 10px; padding-top: 12px; border-top: 1px solid var(--line); }
+.q:first-child { border-top: 0; padding-top: 0; }
+.q-stem { font-family: var(--font-text); font-size: 16px; font-weight: 600; }
+.opts { display: grid; gap: 8px; }
+.opt { display: flex; align-items: flex-start; gap: 12px; text-align: left; width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 10px 12px; font-family: var(--font-text); font-size: 15.5px; line-height: 1.5; }
+.opt .bub { flex: none; width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--muted); display: grid; place-items: center; font-family: var(--font-ui); font-size: 12px; font-weight: 700; color: var(--muted); margin-top: 1px; }
+.opt[aria-pressed="true"] { border-color: var(--accent); }
+.opt[aria-pressed="true"] .bub { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.opt.correct { border-color: var(--good); background: var(--good-soft); }
+.opt.correct .bub { background: var(--good); border-color: var(--good); color: var(--surface); }
+.opt.wrong { border-color: var(--bad); background: var(--bad-soft); }
+.opt.wrong .bub { background: var(--bad); border-color: var(--bad); color: var(--surface); }
+.opt:disabled { cursor: default; }
+.expl { background: var(--surface-2); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+.blank { display: inline-flex; align-items: baseline; white-space: nowrap; }
+.blank input { width: calc(var(--n) * 0.62em + 14px); border: 0; border-bottom: 2px solid var(--accent); background: var(--accent-soft); border-radius: 4px 4px 0 0; padding: 0 4px; font-family: var(--font-text); font-size: 16.5px; letter-spacing: .04em; }
+.blank input.ok { border-color: var(--good); background: var(--good-soft); }
+.blank input.ng { border-color: var(--bad); background: var(--bad-soft); }
+.blank .fix { font-size: 12px; color: var(--good); font-family: var(--font-ui); margin-left: 2px; }
+.audio-box { display: grid; gap: 10px; justify-items: start; }
+.play-btn { display: inline-flex; align-items: center; gap: 10px; }
+.wave { display: inline-flex; gap: 3px; align-items: center; height: 18px; }
+.wave i { width: 3px; background: currentColor; border-radius: 2px; height: 30%; animation: wv 1s ease-in-out infinite; }
+.wave i:nth-child(2) { animation-delay: .15s } .wave i:nth-child(3) { animation-delay: .3s } .wave i:nth-child(4) { animation-delay: .45s }
+@keyframes wv { 50% { height: 100%; } }
+@media (prefers-reduced-motion: reduce) { .wave i { animation: none; height: 60%; } .skeleton { animation: none !important; } }
+.script { font-family: var(--font-text); font-size: 15px; display: grid; gap: 6px; }
+.script b { font-family: var(--font-ui); font-size: 12px; color: var(--muted); margin-right: 6px; }
+.slots { min-height: 52px; display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; border: 1.5px dashed var(--line); border-radius: 12px; align-items: center; }
+.slots.ok { border-color: var(--good); border-style: solid; background: var(--good-soft); }
+.slots.ng { border-color: var(--bad); border-style: solid; background: var(--bad-soft); }
+.bank { display: flex; flex-wrap: wrap; gap: 8px; }
+.tile { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 7px 11px; font-family: var(--font-text); font-size: 15.5px; }
+.tile.placed { background: var(--accent-soft); border-color: transparent; }
+.tile:disabled { opacity: .3; }
+.tile.placed:disabled { opacity: 1; cursor: default; }
+.bubble { background: var(--surface-2); border-radius: 12px 12px 12px 4px; padding: 10px 12px; font-family: var(--font-text); }
+.post { border-left: 3px solid var(--line); padding-left: 12px; display: grid; gap: 4px; }
+.post.prof { border-color: var(--accent); }
+.post b { font-size: 13px; }
+.post p { font-family: var(--font-text); }
+.diff-word { padding: 0 2px; border-radius: 4px; }
+.diff-word.miss { background: var(--bad-soft); color: var(--bad); text-decoration: line-through; }
+.diff-word.hit { color: var(--good); }
+.big-score { display: flex; align-items: baseline; gap: 8px; }
+.big-score b { font-size: 40px; line-height: 1; font-variant-numeric: tabular-nums; }
+.skeleton { background: linear-gradient(90deg, var(--surface-2), var(--line), var(--surface-2)); background-size: 200% 100%; animation: sk 1.4s linear infinite; border-radius: 8px; height: 14px; }
+@keyframes sk { to { background-position: -200% 0; } }
+.notice { font-size: 13px; padding: 10px 12px; border-radius: 10px; background: var(--warn-soft); color: var(--ink); }
+.notice b { color: var(--warn); }
+.fb-list { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+.corr { display: grid; gap: 4px; padding: 10px 12px; background: var(--surface-2); border-radius: 10px; }
+.corr .from { text-decoration: line-through; color: var(--bad); font-family: var(--font-text); }
+.corr .to { color: var(--good); font-family: var(--font-text); font-weight: 600; }
+details.card summary { cursor: pointer; font-weight: 700; }
+.goal-grid { display: grid; grid-template-columns: 1fr auto; gap: 10px 12px; align-items: center; }
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.stepper button { width: 40px; height: 40px; border: 0; background: var(--surface-2); font-size: 18px; font-weight: 700; }
+.stepper span { min-width: 56px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--tabbar) + 16px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 99px; font-size: 13px; font-weight: 700; z-index: 40; max-width: calc(100% - 32px); }
+</style>
+
+<div class="shell">
+  <header class="top"><div class="top-row" id="topbar"></div></header>
+  <main class="view" id="view"></main>
+</div>
+<nav class="tabs" aria-label="メインメニュー"><div class="inner" id="tabs"></div></nav>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+"use strict";
+/* ============================================================
+ * reiro TOEFL Drill — プロトタイプ
+ * 本番の Next.js + Supabase 版の前に、体験と思想を確かめるための1ファイル版。
+ * - AI 生成・採点: claude.use("sample")（使えなければ内蔵サンプル・固定フィードバック）
+ * - 読み上げ: claude.use("tts") → ブラウザの speechSynthesis → スクリプト表示
+ * - スピーキング: claude.use("dictation")（使えなければ入力欄に打つ）
+ * - 保存: この端末のブラウザ（localStorage）のみ
+ * ============================================================ */
+
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const $ = (sel) => document.querySelector(sel);
+const LETTERS = ["A", "B", "C", "D"];
+const DAY = 86400000;
+
+/* ---------- マスタ ---------- */
+const SECTIONS = {
+  reading: { ja: "リーディング", en: "Reading", letter: "R" },
+  listening: { ja: "リスニング", en: "Listening", letter: "L" },
+  writing: { ja: "ライティング", en: "Writing", letter: "W" },
+  speaking: { ja: "スピーキング", en: "Speaking", letter: "S" },
+};
+const SECTION_KEYS = Object.keys(SECTIONS);
+const TASKS = [
+  { id: "words", section: "reading", en: "Complete the Words", ja: "段落の10語の後半を入力する", mins: 3, engine: "words" },
+  { id: "daily", section: "reading", en: "Read in Daily Life", ja: "掲示・メールなどの短文＋3問", mins: 3, engine: "mcq" },
+  { id: "academic", section: "reading", en: "Read an Academic Passage", ja: "アカデミックな文章＋5問", mins: 6, engine: "mcq" },
+  { id: "choose", section: "listening", en: "Listen and Choose a Response", ja: "1文を聞いて自然な応答を選ぶ（5問）", mins: 2, engine: "choose" },
+  { id: "conversation", section: "listening", en: "Listen to a Conversation", ja: "2人の会話＋2問", mins: 3, engine: "listen" },
+  { id: "announcement", section: "listening", en: "Listen to an Announcement", ja: "キャンパスのアナウンス＋2問", mins: 2, engine: "listen" },
+  { id: "talk", section: "listening", en: "Listen to an Academic Talk", ja: "短い講義＋4問", mins: 4, engine: "listen" },
+  { id: "build", section: "writing", en: "Build a Sentence", ja: "語句を並べて返答文を作る（5問）", mins: 3, engine: "build" },
+  { id: "email", section: "writing", en: "Write an Email", ja: "3つの要件を満たすメールを書く", mins: 7, engine: "write" },
+  { id: "discussion", section: "writing", en: "Write for an Academic Discussion", ja: "授業の掲示板に意見を書く", mins: 10, engine: "write" },
+  { id: "repeat", section: "speaking", en: "Listen and Repeat", ja: "7文を聞いてそのまま繰り返す", mins: 2, engine: "repeat" },
+  { id: "interview", section: "speaking", en: "Take an Interview", ja: "4つの質問に各45秒で答える", mins: 4, engine: "interview" },
+];
+const TASK = Object.fromEntries(TASKS.map((t) => [t.id, t]));
+const DIFF = {
+  easy: { ja: "易", sub: "band 3〜4", prompt: "easy (TOEFL band 3-4, CEFR B1)", adj: -0.5 },
+  standard: { ja: "標準", sub: "band 4〜5", prompt: "standard (TOEFL band 4-5, CEFR B2)", adj: 0 },
+  hard: { ja: "難", sub: "band 5〜6", prompt: "hard (TOEFL band 5-6, CEFR C1+)", adj: 0.5 },
+};
+const TOPICS = ["biology", "astronomy", "art history", "economics", "psychology", "geology", "urban planning", "linguistics", "environmental science", "anthropology", "architecture", "marketing"];
+// 1〜6 band → 0〜120 の目安（移行期間の参考表示。デモ用の仮値。本番では ETS の換算表で確認する）
+const BAND_TO_120 = { 1: "0–11", 1.5: "12–23", 2: "24–33", 2.5: "34–43", 3: "44–57", 3.5: "58–71", 4: "72–85", 4.5: "86–94", 5: "95–106", 5.5: "107–113", 6: "114–120" };
+
+/* ---------- 内蔵サンプル（すべてオリジナル） ---------- */
+const SAMPLES = {
+  words: {
+    title: "How Bees See Color",
+    text: "Honeybees perceive the world very differently from humans. Their [[eyes]] are sensitive to ultraviolet [[light]], which people cannot [[detect]]. Many flowers display [[patterns]] that only appear under this kind of light. These markings [[guide]] bees toward the nectar, much like lights on a [[runway]] guide a plane. In [[return]], the bees carry pollen from one [[flower]] to the next, helping plants [[reproduce]]. Over millions of years, this partnership has [[shaped]] both groups.",
+    notes_ja: "ultraviolet（紫外線）、pollen（花粉）、reproduce（繁殖する）は生物系の頻出語です。",
+  },
+  daily: {
+    genre: "Email", title: "Changes to Study Room Reservations",
+    text: "From: Campus Library Services\nTo: All Students\nSubject: Changes to Study Room Reservations\n\nStarting Monday, March 3, study rooms on the second floor must be reserved through the library app instead of at the front desk. Each student may book up to two hours per day, and reservations can be made up to seven days in advance. If you do not check in within 15 minutes of your start time, your reservation will be released to other students. Rooms on the third floor will remain available on a first-come, first-served basis. Questions can be sent to the library help desk.",
+    questions: [
+      { q: "What is the main purpose of the email?", options: ["To explain why the library will close early", "To announce a new way to reserve study rooms", "To ask students to return borrowed books", "To introduce new rooms on the third floor"], answer: 1, explanation_ja: "冒頭で「予約はフロントではなくアプリで行う」と述べており、これがメールの目的です。" },
+      { q: "What happens if a student arrives 20 minutes after the reservation start time?", options: ["The student must pay a fee", "The reservation is extended automatically", "The student must go to the front desk", "The reservation may be given to someone else"], answer: 3, explanation_ja: "15分以内にチェックインしないと予約は他の学生に開放される（released）とあります。" },
+      { q: "What is true about the third-floor rooms?", options: ["They do not require a reservation", "They can be reserved seven days in advance", "They are closed on Mondays", "They are limited to two hours per day"], answer: 0, explanation_ja: "first-come, first-served（先着順）は予約不要という意味です。" },
+    ],
+  },
+  academic: {
+    genre: "Urban science", title: "Urban Heat Islands",
+    text: "Cities are often several degrees warmer than the countryside around them, a phenomenon known as the urban heat island effect. The main cause is the replacement of vegetation with materials such as asphalt and concrete. These surfaces absorb sunlight during the day and release the stored heat slowly at night, so urban areas cool down far less after sunset than rural ones do. Plants, by contrast, cool their surroundings through evapotranspiration, the process by which water evaporates from leaves.\n\nThe shape of a city also matters. Tall buildings placed close together trap heat between them and block the winds that would otherwise carry warm air away. In addition, heat produced by cars, air conditioners, and factories adds directly to the temperature of the surrounding air.\n\nThe consequences extend beyond discomfort. Higher temperatures increase the demand for electricity and can worsen air quality, since many pollutants form more quickly in hot conditions. For this reason, some cities have begun to paint roofs white, plant trees along streets, and create rooftop gardens. Early studies suggest that such measures can lower local surface temperatures noticeably, although their effect on the city as a whole is still being measured.",
+    questions: [
+      { q: "The word \"replacement\" in paragraph 1 is closest in meaning to", options: ["substitution", "protection", "expansion", "inspection"], answer: 0, explanation_ja: "replacement は「置き換え」。植生がアスファルトなどに置き換わることを指すので substitution が最も近い意味です。" },
+      { q: "According to paragraph 1, why do urban areas stay warm at night?", options: ["Cities receive more sunlight than rural areas.", "Night winds are weaker in the countryside.", "Paved surfaces release heat they absorbed during the day.", "Plants in cities release warm water vapor."], answer: 2, explanation_ja: "舗装面が昼に吸収した熱を夜にゆっくり放出する、と本文にあります。" },
+      { q: "Which of the following is NOT mentioned as a cause of the urban heat island effect?", options: ["Heat from vehicles and machines", "Large bodies of water near cities", "Buildings that block the wind", "The loss of plants"], answer: 1, explanation_ja: "車・機械の排熱、風を遮る建物、植物の減少は述べられていますが、水域については書かれていません。" },
+      { q: "Why does the author mention that many pollutants form more quickly in hot conditions?", options: ["To argue that factories should be moved out of cities", "To compare cities with rural areas", "To describe how rooftop gardens work", "To explain how higher temperatures can harm air quality"], answer: 3, explanation_ja: "直前の「気温上昇で大気の質が悪化しうる」理由を説明するための記述です（修辞目的の設問）。" },
+      { q: "What can be inferred about the measures described in paragraph 3?", options: ["Their full impact on cities is not yet known.", "They have already cooled entire cities.", "They are more expensive than air conditioning.", "They were first used in rural areas."], answer: 0, explanation_ja: "最後の文で「都市全体への効果はまだ測定中」とあるため、全体への影響はまだ分からないと推測できます。" },
+    ],
+  },
+  choose: {
+    items: [
+      { utterance: "Do you know if the bookstore is still open?", speaker: "female", options: ["Yes, I bought two books there.", "I think it closes at six.", "It's on the second floor of the library.", "No, I didn't open it."], answer: 1, explanation_ja: "営業しているかを聞かれているので、閉店時間で答えるのが自然です。open の音につられた選択肢に注意。" },
+      { utterance: "Would you mind looking over my presentation slides?", speaker: "male", options: ["I watched it last night.", "The slides were on the floor.", "Sure, send them over when you're ready.", "No, I'm not looking for anything."], answer: 2, explanation_ja: "Would you mind ...? は依頼。「いいよ、準備できたら送って」が自然な応答です。" },
+      { utterance: "Why wasn't Professor Lin in class today?", speaker: "female", options: ["She's at a conference this week.", "Class starts at nine.", "I wasn't sure which room it was in.", "Because the exam is next week."], answer: 0, explanation_ja: "教授が欠席した理由を答えているのは「今週は学会に出ている」です。" },
+      { utterance: "I can't believe the shuttle is late again.", speaker: "male", options: ["It leaves from the main gate.", "Yes, I believe you.", "The shuttle was early yesterday.", "I know. Maybe we should just walk."], answer: 3, explanation_ja: "不満への共感と提案が自然。believe の繰り返しにつられないように。" },
+      { utterance: "Have you decided which lab section to sign up for?", speaker: "female", options: ["The lab is in Building C.", "Not yet. I'm still comparing the schedules.", "I signed the form yesterday.", "Yes, the section was difficult."], answer: 1, explanation_ja: "決めたかどうかを聞かれているので「まだ、比較中」が自然です。" },
+    ],
+  },
+  conversation: {
+    title: "Changing Majors", setting_ja: "学生がアドバイザーに専攻の変更について相談しています。",
+    lines: [
+      { speaker: "Student", text: "Hi, Mr. Patel. Do you have a few minutes? I wanted to ask about switching my major." },
+      { speaker: "Advisor", text: "Of course, come on in. What are you thinking of switching to?" },
+      { speaker: "Student", text: "I'm in biology right now, but I've really enjoyed my statistics class, so I'm considering data science." },
+      { speaker: "Advisor", text: "That's a popular move these days. Have you checked how many of your current credits would transfer?" },
+      { speaker: "Student", text: "Not exactly. I know the chemistry courses probably won't count." },
+      { speaker: "Advisor", text: "Right, but your math and statistics courses will. You'd likely need one extra semester." },
+      { speaker: "Student", text: "One semester isn't bad. Is there anything I should do first?" },
+      { speaker: "Advisor", text: "I'd suggest taking the introductory programming course next term. If you enjoy it, we can file the paperwork then." },
+      { speaker: "Student", text: "That sounds like a good plan. I'll sign up today." },
+    ],
+    questions: [
+      { q: "Why does the student go to see the advisor?", options: ["To complain about a chemistry course", "To ask about changing her major", "To register for a statistics class", "To get help with a programming project"], answer: 1, explanation_ja: "冒頭で switching my major（専攻の変更）について聞きたいと言っています。" },
+      { q: "What does the advisor suggest the student do next?", options: ["Take an introductory programming course", "Drop her statistics class", "Submit the paperwork today", "Talk to a biology professor"], answer: 0, explanation_ja: "来学期に入門プログラミングを取り、気に入ったら書類を出そうと提案しています。" },
+    ],
+  },
+  announcement: {
+    title: "Student Center Maintenance", setting_ja: "大学の学生センターで流れるアナウンスです。",
+    lines: [
+      { speaker: "Announcer", text: "Attention, please. Due to scheduled maintenance, the north entrance of the Student Center will be closed from Thursday through Saturday. During this time, please use the west entrance, next to the bike racks." },
+      { speaker: "Announcer", text: "The food court will stay open with regular hours, but the post office counter will close at three p.m. each day instead of five. If you're expecting a package, you can pick it up at the temporary desk in Room 104. We apologize for the inconvenience and thank you for your patience." },
+    ],
+    questions: [
+      { q: "What is the announcement mainly about?", options: ["A new food court opening", "Temporary changes caused by maintenance", "The location of the bike racks", "A delay in package deliveries"], answer: 1, explanation_ja: "メンテナンスによる入口や営業時間の一時的な変更が中心です。" },
+      { q: "What should students who are expecting a package do?", options: ["Go to the north entrance", "Wait until Saturday", "Go to Room 104", "Visit the post office before five p.m."], answer: 2, explanation_ja: "荷物は Room 104 の臨時デスクで受け取れると言っています。郵便窓口は5時ではなく3時に閉まる点にも注意。" },
+    ],
+  },
+  talk: {
+    title: "How Migrating Birds Navigate", setting_ja: "生物学の授業で、教授が渡り鳥の方向感覚について話しています。",
+    lines: [
+      { speaker: "Professor", text: "Okay, today let's look at a question that puzzled scientists for a long time: how do migrating birds find their way over thousands of kilometers? It turns out they use several tools at once." },
+      { speaker: "Professor", text: "During the day, many species use the position of the sun. But the sun moves, right? So birds have to combine it with an internal clock to know which direction is south at any given time." },
+      { speaker: "Professor", text: "At night, birds that migrate in the dark rely on the stars. In one classic experiment, researchers placed young birds in a planetarium and rotated the artificial sky. The birds changed the direction they tried to fly to match the new star pattern." },
+      { speaker: "Professor", text: "And then there's the Earth's magnetic field. Birds appear to sense it, possibly through special cells in their eyes. What's interesting is that no single cue is enough by itself. When clouds hide the sun and stars, the magnetic sense becomes much more important. So think of it as a backup system, with each tool covering for the others." },
+    ],
+    questions: [
+      { q: "What is the lecture mainly about?", options: ["Why some birds do not migrate", "How the Earth's magnetic field was discovered", "The methods birds use to find their direction", "The design of planetarium experiments"], answer: 2, explanation_ja: "渡り鳥が方向を知る複数の手がかり（太陽・星・地磁気）が主題です。" },
+      { q: "Why does the professor mention the planetarium experiment?", options: ["To show that birds use star patterns to navigate", "To explain how planetariums are built", "To argue that young birds cannot migrate", "To compare day and night temperatures"], answer: 0, explanation_ja: "人工の空を回すと鳥の向きが変わった、という結果で星を使っていることを示しています。" },
+      { q: "According to the professor, why must birds use an internal clock?", options: ["Because they fly only at night", "Because the sun's position changes during the day", "Because the magnetic field is weak", "Because stars are hidden by clouds"], answer: 1, explanation_ja: "太陽は動くので、時刻の感覚と組み合わせる必要があると言っています。" },
+      { q: "What can be inferred about birds flying on a cloudy night?", options: ["They stop migrating until the sky clears.", "They follow other birds instead.", "They fly toward the brightest light.", "They depend more on their magnetic sense."], answer: 3, explanation_ja: "太陽や星が見えないときは磁気の感覚がより重要になる、と述べています。" },
+    ],
+  },
+  build: {
+    items: [
+      { context: "Did you get a chance to look at the new schedule?", chunks: ["Yes,", "I noticed that", "our meeting", "has been moved", "to Friday."], distractor: "move", explanation_ja: "現在完了の受動態 has been moved が要。原形の move は使いません。" },
+      { context: "Where should I put these boxes?", chunks: ["You can", "leave them", "next to", "the printer", "for now."], distractor: "from", explanation_ja: "next to（〜の隣に）で場所を表します。from は不要です。" },
+      { context: "How was the guest lecture yesterday?", chunks: ["It was", "more interesting", "than", "I had", "expected."], distractor: "most", explanation_ja: "比較級 more ... than。最上級の most はダミーです。" },
+      { context: "Are you coming to the study group tonight?", chunks: ["I'd like to,", "but I have", "to finish", "my lab report", "first."], distractor: "finishing", explanation_ja: "have to + 動詞の原形。finishing は使いません。" },
+      { context: "Why is the café so crowded today?", chunks: ["They are", "offering", "free coffee", "to celebrate", "their anniversary."], distractor: "offered", explanation_ja: "現在進行形 are offering。過去形 offered はダミーです。" },
+    ],
+  },
+  email: {
+    situation: "You recently joined a university hiking club. The club's next trip is this Saturday, but you have a schedule conflict. Write an email to the club leader, Jordan.",
+    recipient: "Jordan (club leader)",
+    tasks: ["Explain why you cannot join this Saturday's trip.", "Ask whether you can join a later trip.", "Suggest a way you could help the club."],
+    situation_ja: "大学のハイキング部に入ったばかり。今週土曜の山行に都合で行けないことを部長の Jordan にメールで伝える。",
+  },
+  discussion: {
+    course: "Urban Studies",
+    professor: { name: "Dr. Rivera", text: "This week we've been discussing how cities can reduce traffic. Some people argue that the best approach is to make public transportation free for everyone. Others think the money would be better spent on improving roads and bike lanes. Which approach do you think would be more effective, and why?" },
+    students: [
+      { name: "Kenji", text: "I think free public transportation would be more effective. When buses and trains cost nothing, people who usually drive will have a strong reason to switch, which would immediately reduce the number of cars." },
+      { name: "Amara", text: "I see Kenji's point, but if buses are slow or unreliable, making them free won't change much. I believe investing in bike lanes and better road design would give people more practical options." },
+    ],
+    question_ja: "交通量を減らすには「公共交通の無料化」と「道路・自転車レーンの整備」のどちらが効果的か。自分の意見を、2人の意見も踏まえて書く。",
+  },
+  repeat: {
+    setting: "A guide is showing new students around the campus.", setting_ja: "ガイドが新入生にキャンパスを案内しています。",
+    sentences: [
+      "Welcome to the campus tour.",
+      "The library is open every day.",
+      "Please stay together as we walk.",
+      "The science building is on your left.",
+      "You can get your student ID card at the main office.",
+      "Most first-year students live in the dormitories near the lake.",
+      "If you have any questions during the tour, feel free to ask me at any time.",
+    ],
+  },
+  interview: {
+    topic: "Technology and learning", topic_ja: "テクノロジーと学び",
+    intro: "Hi, thanks for joining today. We're doing a study about how students use technology to learn. I'll ask you a few questions.",
+    questions: [
+      "Can you describe a time when an app or a website helped you learn something new?",
+      "Do you prefer studying with printed books or with digital materials? Why?",
+      "Some schools ban phones in classrooms. Do you think this is a good idea?",
+      "In the future, how do you think artificial intelligence will change the way people learn?",
+    ],
+  },
+};
+
+/* ---------- AI 用スキーマ（SPEC.md 5章） ---------- */
+const MCQ_SCHEMA = '{"q": string, "options": [4 strings], "answer": 0-3, "explanation_ja": string}';
+const SCHEMA = {
+  words: '{"title": string, "text": string /* 70-90 words. Wrap exactly 10 single words as [[word]]. None in the first sentence. Each wrapped word 4+ letters. */, "notes_ja": string}',
+  daily: `{"genre": string /* notice | email | ad | schedule | text message */, "title": string, "text": string /* 60-150 words */, "questions": [3 x ${MCQ_SCHEMA}]}`,
+  academic: `{"genre": string, "title": string, "text": string /* 180-250 words, 2-3 paragraphs separated by \\n\\n */, "questions": [5 x ${MCQ_SCHEMA}] /* in order: vocabulary, factual detail, NOT/EXCEPT or inference, rhetorical purpose, main idea */}`,
+  choose: '{"items": [5 x {"utterance": string /* one spoken sentence */, "speaker": "female"|"male", "options": [4 strings /* possible replies */], "answer": 0-3, "explanation_ja": string}]}',
+  conversation: `{"title": string, "setting_ja": string, "lines": [8-12 x {"speaker": string /* two speakers, e.g. Student and Librarian */, "text": string}], "questions": [2 x ${MCQ_SCHEMA}]}`,
+  announcement: `{"title": string, "setting_ja": string, "lines": [2-3 x {"speaker": "Announcer", "text": string}] /* 80-130 words total, campus or workplace */, "questions": [2 x ${MCQ_SCHEMA}]}`,
+  talk: `{"title": string, "setting_ja": string, "lines": [3-5 x {"speaker": "Professor", "text": string}] /* 200-280 words total, spoken lecture style */, "questions": [4 x ${MCQ_SCHEMA}]}`,
+  build: '{"items": [5 x {"context": string /* a question or remark from person A */, "chunks": [4-6 strings in the CORRECT order forming person B\'s reply; last chunk ends with punctuation], "distractor": string /* one extra chunk that does not belong */, "explanation_ja": string}]}',
+  email: '{"situation": string, "recipient": string, "tasks": [3 strings], "situation_ja": string}',
+  discussion: '{"course": string, "professor": {"name": string, "text": string /* 60-90 words ending with a question */}, "students": [2 x {"name": string, "text": string /* 40-60 words, different views */}], "question_ja": string}',
+  repeat: '{"setting": string, "setting_ja": string, "sentences": [7 strings /* increasing length from 5 to 15 words, same setting */]}',
+  interview: '{"topic": string, "topic_ja": string, "intro": string, "questions": [4 strings /* personal experience -> opinion -> opinion -> abstract/future */]}',
+};
+const okMcq = (q) => q && typeof q.q === "string" && Array.isArray(q.options) && q.options.length === 4 && Number.isInteger(q.answer) && q.answer >= 0 && q.answer < 4;
+const VALIDATE = {
+  words: (d) => typeof d.text === "string" && (d.text.match(/\[\[[^\]]+\]\]/g) || []).length >= 8,
+  daily: (d) => typeof d.text === "string" && Array.isArray(d.questions) && d.questions.length >= 3 && d.questions.every(okMcq),
+  academic: (d) => typeof d.text === "string" && Array.isArray(d.questions) && d.questions.length >= 5 && d.questions.every(okMcq),
+  choose: (d) => Array.isArray(d.items) && d.items.length >= 5 && d.items.every((i) => typeof i.utterance === "string" && okMcq({ q: "x", options: i.options, answer: i.answer })),
+  conversation: (d) => Array.isArray(d.lines) && d.lines.length >= 6 && Array.isArray(d.questions) && d.questions.every(okMcq),
+  announcement: (d) => Array.isArray(d.lines) && d.lines.length >= 1 && Array.isArray(d.questions) && d.questions.every(okMcq),
+  talk: (d) => Array.isArray(d.lines) && d.lines.length >= 2 && Array.isArray(d.questions) && d.questions.every(okMcq),
+  build: (d) => Array.isArray(d.items) && d.items.length >= 5 && d.items.every((i) => Array.isArray(i.chunks) && i.chunks.length >= 3 && typeof i.distractor === "string"),
+  email: (d) => typeof d.situation === "string" && Array.isArray(d.tasks) && d.tasks.length === 3,
+  discussion: (d) => d.professor && typeof d.professor.text === "string" && Array.isArray(d.students) && d.students.length === 2,
+  repeat: (d) => Array.isArray(d.sentences) && d.sentences.length === 7 && d.sentences.every((s) => typeof s === "string"),
+  interview: (d) => Array.isArray(d.questions) && d.questions.length === 4,
+};
+
+/* ---------- 保存（この端末のみ） ---------- */
+const store = {
+  get(k, fb) { try { const v = localStorage.getItem("rtd:" + k); return v ? JSON.parse(v) : fb; } catch { return fb; } },
+  set(k, v) { try { localStorage.setItem("rtd:" + k, JSON.stringify(v)); } catch {} },
+};
+
+function seedAttempts() {
+  // 6週間分の例。Listening が弱め、Writing は伸びてきている、という設定
+  let s = 7;
+  const rnd = () => ((s = (s * 9301 + 49297) % 233280) / 233280);
+  const base = { reading: 0.74, listening: 0.55, writing: 4.2, speaking: 4.0 };
+  const now = Date.now();
+  const out = [];
+  let cursor = 0;
+  for (let d = 41; d >= 1; d--) {
+    if (rnd() < 0.3) continue;
+    const n = 1 + Math.floor(rnd() * 2);
+    for (let k = 0; k < n; k++) {
+      const t = TASKS[(cursor++ * 5) % TASKS.length];
+      const growth = (41 - d) / 41;
+      const diff = rnd() < 0.2 ? "easy" : rnd() < 0.8 ? "standard" : "hard";
+      const a = { id: "seed" + d + k, task: t.id, section: t.section, difficulty: diff, date: now - d * DAY - rnd() * 8 * 3600000, duration: Math.round(t.mins * 60 * (0.8 + rnd() * 0.5)), seed: true };
+      if (["email", "discussion", "interview"].includes(t.id)) {
+        a.band = Math.round((base[t.section] + growth * 0.6 + (rnd() - 0.5)) * 2) / 2;
+        a.band = Math.min(6, Math.max(1, a.band));
+      } else {
+        const p = t.section === "listening" ? base.listening + growth * 0.08 : t.section === "reading" ? base.reading + growth * 0.06 : 0.62 + growth * 0.1;
+        const weak = t.id === "conversation" ? -0.12 : t.id === "talk" ? -0.06 : t.id === "build" ? -0.05 : 0;
+        a.total = { words: 10, daily: 3, academic: 5, choose: 5, conversation: 2, announcement: 2, talk: 4, build: 5, repeat: 7 }[t.id];
+        a.correct = Math.max(0, Math.min(a.total, Math.round(a.total * (p + weak + (rnd() - 0.5) * 0.25))));
+      }
+      out.push(a);
+    }
+  }
+  return out;
+}
+
+const today0 = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
+const isoDate = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+const S = {
+  tab: "home",
+  goals: store.get("goals", null) || { total: 5, reading: 5, listening: 5, writing: 4.5, speaking: 4.5, examDate: isoDate(new Date(Date.now() + 62 * DAY)), weeklyMinutes: 240, weeklySets: 10 },
+  attempts: store.get("attempts", null) || seedAttempts(),
+  mistakes: store.get("mistakes", null) || [
+    { id: "m1", task: "academic", q: SAMPLES.academic.questions[2], date: Date.now() - 3 * DAY, resolved: false, picked: 3 },
+    { id: "m2", task: "conversation", q: SAMPLES.conversation.questions[1], date: Date.now() - 2 * DAY, resolved: false, picked: 2 },
+    { id: "m3", task: "choose", q: { q: "(Audio) " + SAMPLES.choose.items[3].utterance, options: SAMPLES.choose.items[3].options, answer: 3, explanation_ja: SAMPLES.choose.items[3].explanation_ja }, date: Date.now() - DAY, resolved: false, picked: 1 },
+  ],
+  vocab: store.get("vocab", null) || [
+    { word: "evapotranspiration", meaning_ja: "蒸発散（植物の葉などから水分が蒸発すること）", example: "Plants cool their surroundings through evapotranspiration." },
+    { word: "first-come, first-served", meaning_ja: "先着順", example: "Rooms are available on a first-come, first-served basis." },
+    { word: "file the paperwork", meaning_ja: "書類を提出する", example: "We can file the paperwork next term." },
+  ],
+  practiceMode: store.get("practiceMode", false),
+  p: { screen: "sections" },
+  review: { open: null },
+};
+const persist = () => { store.set("goals", S.goals); store.set("attempts", S.attempts); store.set("mistakes", S.mistakes); store.set("vocab", S.vocab); store.set("practiceMode", S.practiceMode); };
+
+/* ---------- 推定スコア（本番では lib/estimate.ts） ---------- */
+const round05 = (x) => Math.round(x * 2) / 2;
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+function attemptBand(a) {
+  if (a.band != null) return a.band;
+  const acc = a.correct / a.total;
+  return clamp(1 + 5 * acc + DIFF[a.difficulty].adj, 1, 6);
+}
+function estimate(section, upTo = Infinity) {
+  const list = S.attempts.filter((a) => a.section === section && a.date <= upTo).sort((x, y) => y.date - x.date).slice(0, 20);
+  if (list.length < 5) return null;
+  return round05(list.reduce((s, a) => s + attemptBand(a), 0) / list.length);
+}
+function estimateTotal(upTo = Infinity) {
+  const v = SECTION_KEYS.map((k) => estimate(k, upTo));
+  if (v.some((x) => x == null)) return null;
+  return round05(v.reduce((s, x) => s + x, 0) / 4);
+}
+function taskRate(taskId) {
+  const list = S.attempts.filter((a) => a.task === taskId).slice(-20);
+  if (!list.length) return null;
+  return list.reduce((s, a) => s + (a.band != null ? a.band / 6 : a.correct / a.total), 0) / list.length;
+}
+function recommendation() {
+  let best = null;
+  for (const k of SECTION_KEYS) {
+    const e = estimate(k);
+    const gap = e == null ? Infinity : (S.goals[k] ?? 0) - e;
+    if (!best || gap > best.gap) best = { section: k, gap, est: e };
+  }
+  const cands = TASKS.filter((t) => t.section === best.section).map((t) => ({ t, r: taskRate(t.id) ?? 0 })).sort((a, b) => a.r - b.r);
+  return { ...best, task: cands[0].t, rate: cands[0].r };
+}
+function weekStats() {
+  const d = today0(); const dow = (d.getDay() + 6) % 7; const monday = d.getTime() - dow * DAY;
+  const list = S.attempts.filter((a) => a.date >= monday);
+  return { minutes: Math.round(list.reduce((s, a) => s + (a.duration || 0), 0) / 60), sets: list.length };
+}
+function streak() {
+  const days = new Set(S.attempts.map((a) => isoDate(new Date(a.date))));
+  let n = 0; let d = today0().getTime();
+  if (!days.has(isoDate(new Date(d)))) d -= DAY; // 今日まだなら昨日から数える
+  while (days.has(isoDate(new Date(d)))) { n++; d -= DAY; }
+  return n;
+}
+
+/* ---------- 実行環境（Claude / 音声 / 音声入力） ---------- */
+const ENV = { sample: null, tts: null, dict: null, ready: false };
+(async () => {
+  const use = (n) => (window.claude && typeof window.claude.use === "function" ? window.claude.use(n).catch(() => null) : Promise.resolve(null));
+  const [sample, tts, dict] = await Promise.all([use("sample"), use("tts"), use("dictation")]);
+  Object.assign(ENV, { sample, tts, dict, ready: true });
+  if (dict) {
+    dict.onPartial(({ text }) => Dict.partial(text));
+    dict.onFinal(({ text }) => Dict.final(text));
+    dict.onState(({ state }) => Dict.state(state));
+  }
+  render();
+})();
+
+const Speech = {
+  speaking: false,
+  voicesFor(lines) {
+    const order = []; const map = {};
+    const tts = ["airy", "rounded", "glassy", "buttery"];
+    for (const l of lines) {
+      const key = String(l.speaker || "x").toLowerCase();
+      if (!(key in map)) {
+        if (key === "female") map[key] = 0; else if (key === "male") map[key] = 1; else if (key === "announcer") map[key] = 3; else if (key === "professor") map[key] = 2;
+        else { map[key] = [0, 1, 2, 3].find((i) => !order.includes(i)) ?? order.length % 4; }
+        order.push(map[key]);
+      }
+    }
+    return (l) => ({ idx: map[String(l.speaker || "x").toLowerCase()], tts: tts[map[String(l.speaker || "x").toLowerCase()]] });
+  },
+  available() { return !!ENV.tts || "speechSynthesis" in window; },
+  async play(lines) {
+    const vf = this.voicesFor(lines);
+    this.speaking = true;
+    try {
+      if (ENV.tts) {
+        await ENV.tts.speak(lines.map((l) => ({ text: l.text, voice: vf(l).tts, language: "en" })), { rate: 0.95 });
+        return;
+      }
+      if ("speechSynthesis" in window) {
+        const all = speechSynthesis.getVoices().filter((v) => /^en/i.test(v.lang));
+        for (const l of lines) {
+          await new Promise((res, rej) => {
+            const u = new SpeechSynthesisUtterance(l.text);
+            const i = vf(l).idx;
+            u.lang = "en-US"; u.rate = 0.95; u.pitch = [1.15, 0.85, 0.95, 1][i] ?? 1;
+            if (all.length) u.voice = all[i % all.length];
+            // 音声が用意されていない環境で onend が来ないことがあるので、長さから見積もった時間で打ち切る
+            const guard = setTimeout(res, 3000 + l.text.split(/\s+/).length * 600);
+            u.onend = () => { clearTimeout(guard); res(); };
+            u.onerror = (e) => { clearTimeout(guard); e.error === "interrupted" || e.error === "canceled" ? rej({ code: "stopped" }) : res(); };
+            speechSynthesis.speak(u);
+          });
+        }
+        return;
+      }
+      throw { code: "no_audio" };
+    } finally { this.speaking = false; }
+  },
+  stop() { try { ENV.tts?.stop(); } catch {} try { speechSynthesis.cancel(); } catch {} this.speaking = false; },
+};
+
+const Dict = {
+  target: null, base: "", listening: false,
+  start(targetKey) {
+    // クリックの中で同期的に start() を呼ぶ（await を挟まない）
+    this.target = targetKey; this.base = (S.p.texts?.[targetKey] || "").trim();
+    ENV.dict.start({ language: "en-US" }).catch((e) => { this.listening = false; if (e?.code === "not_granted") toast("音声入力が許可されませんでした。入力欄に打ち込んで回答できます。"); render(); });
+    this.listening = true; render();
+  },
+  stop() { ENV.dict?.stop().catch(() => {}); },
+  setText(t) {
+    if (!this.target) return;
+    S.p.texts = S.p.texts || {};
+    S.p.texts[this.target] = t;
+    const el = document.getElementById("ta-" + this.target);
+    if (el) el.value = t;
+  },
+  partial(text) { this.setText((this.base + " " + text).trim()); },
+  final(text) { this.base = (this.base + " " + text).trim(); this.setText(this.base); },
+  state(st) { const was = this.listening; this.listening = st === "listening" || st === "starting"; if (was !== this.listening) render(); },
+};
+
+/* ---------- 共通 UI ---------- */
+let toastTimer;
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => (t.hidden = true), 2600); }
+const fmtTime = (sec) => { const s = Math.abs(Math.round(sec)); return (sec < 0 ? "-" : "") + String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); };
+const bandStr = (b) => (b == null ? "—" : b.toFixed(1));
+const shuffle = (arr, seed) => { const a = arr.slice(); let s = seed || 1; for (let i = a.length - 1; i > 0; i--) { s = (s * 9301 + 49297) % 233280; const j = Math.floor((s / 233280) * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+const ICONS = {
+  home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>',
+  practice: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="m13.5 6.5 4 4"/></svg>',
+  review: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 14-5.3L20 9"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-14 5.3L4 15"/><path d="M4 20v-5h5"/></svg>',
+  goals: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/></svg>',
+  play: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>',
+  mic: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
+};
+
+/* ============================================================
+ * 描画
+ * ============================================================ */
+function render() {
+  renderTop();
+  renderTabs();
+  const v = $("#view");
+  v.innerHTML = S.tab === "home" ? viewHome() : S.tab === "practice" ? viewPractice() : S.tab === "review" ? viewReview() : viewGoals();
+  afterRender();
+}
+function renderTop() {
+  const inPlay = S.tab === "practice" && S.p.screen !== "sections";
+  $("#topbar").innerHTML = inPlay
+    ? `<button class="back" data-a="p-back">‹ 戻る</button><span class="small muted">${esc(SECTIONS[S.p.section]?.ja || "")}</span><span class="demo-pill">DEMO</span>`
+    : `<div class="brand"><span class="brand-mark">T</span>reiro TOEFL Drill</div><span class="demo-pill">DEMO</span>`;
+}
+function renderTabs() {
+  const tabs = [["home", "ホーム"], ["practice", "演習"], ["review", "復習"], ["goals", "目標"]];
+  $("#tabs").innerHTML = tabs.map(([k, l]) => `<button data-a="tab" data-v="${k}" ${S.tab === k ? 'aria-current="page"' : ""}>${ICONS[k]}${l}</button>`).join("");
+}
+
+/* ---------- ホーム ---------- */
+function viewHome() {
+  const g = S.goals;
+  const days = Math.ceil((new Date(g.examDate + "T00:00:00") - today0()) / DAY);
+  const tot = estimateTotal();
+  const rec = recommendation();
+  const wk = weekStats();
+  const weak = TASKS.map((t) => ({ t, r: taskRate(t.id) })).filter((x) => x.r != null).sort((a, b) => a.r - b.r).slice(0, 3);
+  const scoreRows = SECTION_KEYS.map((k) => {
+    const e = estimate(k); const tg = g[k]; const gap = e == null ? null : e - tg;
+    return `<div class="score-row">
+      <span class="small"><b>${SECTIONS[k].en}</b></span>
+      <div class="bar" role="img" aria-label="推定 ${bandStr(e)} / 目標 ${bandStr(tg)}"><span class="fill" style="width:${e == null ? 0 : ((e - 1) / 5) * 100}%"></span><span class="target" style="left:calc(${((tg - 1) / 5) * 100}% - 1px)"></span></div>
+      <span class="num small"><b>${bandStr(e)}</b> ${gap == null ? '<span class="muted">データ不足</span>' : gap >= 0 ? '<span class="gap-ok">達成</span>' : `<span class="gap-neg">${gap.toFixed(1)}</span>`}</span>
+    </div>`;
+  }).join("");
+  const real = S.attempts.filter((a) => !a.seed).length;
+  return `
+  ${real === 0 ? `<div class="notice"><b>サンプルデータを表示中</b>　6週間分の学習履歴の例です。演習を解くと、その結果がこの画面に反映されます。</div>` : ""}
+  <section class="card">
+    <div class="row between wrap">
+      <div><h2>受験日まで</h2><div class="hero-count"><b>${days}</b><span>日</span></div><p class="small muted">${esc(g.examDate.replaceAll("-", "/"))} 受験予定</p></div>
+      <div style="text-align:right"><h2>推定スコア（合計）</h2><div class="hero-count" style="justify-content:flex-end"><b>${bandStr(tot)}</b><span class="muted">/ 目標 ${bandStr(g.total)}</span></div><p class="small muted num">0–120 換算 目安 ${tot == null ? "—" : BAND_TO_120[tot]}</p></div>
+    </div>
+  </section>
+
+  <section class="card next-card">
+    <h2 style="color:inherit;opacity:.85">次の1セット</h2>
+    <div><h3>${esc(rec.task.en)}</h3><p class="small muted">${rec.est == null ? `${esc(SECTIONS[rec.section].ja)} はまだ推定に必要な5回分の結果がありません。まずデータを集めましょう。` : rec.gap > 0 ? `${esc(SECTIONS[rec.section].ja)} が目標まで ${rec.gap.toFixed(1)} 足りません。その中で正答率が最も低いタスクです（直近 ${Math.round(rec.rate * 100)}%）。` : `全セクションで目標に届いています。${esc(SECTIONS[rec.section].ja)} の正答率が最も低いタスクで仕上げましょう。`}</p></div>
+    <button class="btn block" data-a="start-rec" data-v="${rec.task.id}">このセットを始める（${rec.task.mins}分）</button>
+  </section>
+
+  <section class="card">
+    <div class="row between"><h2 style="margin:0">セクション別　推定 / 目標</h2><span class="small muted">｜＝目標</span></div>
+    <div class="score-rows">${scoreRows}</div>
+    <div class="chart">${trendChart()}</div>
+    <p class="small muted">直近20回の結果から出した非公式の目安です。選択式は正答率を難易度で補正、記述・スピーキングは AI 採点の平均。5回未満は「データ不足」。</p>
+  </section>
+
+  <div class="grid2">
+    <section class="card">
+      <h2>今週の学習量</h2>
+      <p class="num"><b style="font-size:22px">${wk.minutes}</b> / ${g.weeklyMinutes} 分</p>
+      <div class="progress"><i style="width:${Math.min(100, (wk.minutes / g.weeklyMinutes) * 100)}%"></i></div>
+      <p class="num small">${wk.sets} / ${g.weeklySets} セット</p>
+      <div class="progress"><i style="width:${Math.min(100, (wk.sets / g.weeklySets) * 100)}%"></i></div>
+    </section>
+    <section class="card">
+      <h2>連続学習</h2>
+      <p class="num"><b style="font-size:22px">${streak()}</b> 日</p>
+      <p class="small muted">1日1セットで記録がつながります。</p>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>苦手なタスク</h2>
+    <ul class="plain weak">${weak.map((w) => `<li><span>${esc(w.t.en)} <span class="small muted">${SECTIONS[w.t.section].letter}</span></span><span class="num chip ${w.r < 0.55 ? "bad" : "warn"}">${Math.round(w.r * 100)}%</span></li>`).join("")}</ul>
+  </section>
+
+  <section class="card flat">
+    <h2>過去問について</h2>
+    <p class="small">ETS は本試験の問題を公開しておらず、公式練習問題にも著作権があるため、このアプリには収録しません。問題はすべて AI が作るオリジナルです。「公式サンプル準拠」をオンにすると、公式サンプルの文体・長さ・設問の型に寄せて作ります。</p>
+    <a class="small" style="color:var(--accent);font-weight:700" href="https://www.ets.org/toefl/test-takers/ibt/prepare/practice-tests.html" target="_blank" rel="noopener noreferrer">ETS 公式の無料練習テスト ↗</a>
+  </section>
+
+  ${aboutCard()}`;
+}
+
+function trendChart() {
+  const W = 320, H = 120, L = 28, R = 10, T = 10, B = 22;
+  const weeks = [];
+  for (let i = 5; i >= 0; i--) { const end = today0().getTime() - i * 7 * DAY + DAY - 1; weeks.push({ end, v: estimateTotal(end), label: i === 0 ? "今週" : `${i}週前` }); }
+  const pts = weeks.filter((w) => w.v != null);
+  const y = (v) => T + (H - T - B) * (1 - (v - 1) / 5);
+  const x = (i) => L + ((W - L - R) * i) / 5;
+  const ticks = [2, 3, 4, 5, 6];
+  const target = S.goals.total;
+  let path = "", area = "";
+  const idx = weeks.map((w, i) => (w.v != null ? i : null)).filter((i) => i != null);
+  if (idx.length) {
+    path = idx.map((i, k) => `${k ? "L" : "M"}${x(i).toFixed(1)},${y(weeks[i].v).toFixed(1)}`).join(" ");
+    area = path + ` L${x(idx[idx.length - 1]).toFixed(1)},${y(1).toFixed(1)} L${x(idx[0]).toFixed(1)},${y(1).toFixed(1)} Z`;
+  }
+  const last = idx.length ? idx[idx.length - 1] : null;
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="推定スコア（合計）の推移">
+    ${ticks.map((t) => `<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)" stroke-width="1"/><text x="${L - 6}" y="${y(t) + 3.5}" text-anchor="end" font-size="10" fill="var(--muted)">${t}</text>`).join("")}
+    <line x1="${L}" x2="${W - R}" y1="${y(target)}" y2="${y(target)}" stroke="var(--ink)" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="${W - R}" y="${y(target) - 4}" text-anchor="end" font-size="10" fill="var(--ink)">目標 ${target.toFixed(1)}</text>
+    ${area ? `<path d="${area}" fill="var(--accent)" opacity=".12"/>` : ""}
+    ${path ? `<path d="${path}" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linejoin="round"/>` : ""}
+    ${idx.map((i) => `<circle cx="${x(i)}" cy="${y(weeks[i].v)}" r="${i === last ? 4 : 2.5}" fill="${i === last ? "var(--accent)" : "var(--surface)"}" stroke="var(--accent)" stroke-width="1.5"/>`).join("")}
+    ${last != null ? `<text x="${x(last) - 6}" y="${y(weeks[last].v) + 16}" text-anchor="end" font-size="11" font-weight="700" fill="var(--accent)">${weeks[last].v.toFixed(1)}</text>` : ""}
+    ${weeks.map((w, i) => `<text x="${x(i)}" y="${H - 6}" text-anchor="middle" font-size="10" fill="var(--muted)">${w.label}</text>`).join("")}
+  </svg>`;
+}
+
+function aboutCard() {
+  const st = (ok, yes, no) => `<span class="chip ${ok ? "good" : "warn"}">${ok ? yes : no}</span>`;
+  return `<details class="card">
+    <summary>このデモについて</summary>
+    <p class="small">本番（Next.js + Supabase）を作り込む前に、体験と考え方を確かめるための試作です。ログインはなく、結果はこの端末のブラウザにだけ残ります。</p>
+    <ul class="plain stack small">
+      <li class="row between"><span>AI による問題生成・採点</span>${ENV.ready ? st(!!ENV.sample, "使用可", "内蔵サンプルで代用") : '<span class="chip">確認中</span>'}</li>
+      <li class="row between"><span>英語の読み上げ</span>${st(Speech.available(), ENV.tts ? "Claude の音声" : "ブラウザの音声", "スクリプト表示で代用")}</li>
+      <li class="row between"><span>スピーキングの音声入力</span>${ENV.ready ? st(!!ENV.dict, "使用可", "文字入力で代用") : '<span class="chip">確認中</span>'}</li>
+    </ul>
+    <p class="small muted">本番との違い：本番は OpenAI の TTS で mp3 を作って保存し、録音は MediaRecorder＋文字起こしで行います。AI 生成は先読みで待ち時間を減らします。</p>
+    <button class="btn sm ghost" data-a="reset">学習データをサンプルに戻す</button>
+  </details>`;
+}
+
+/* ---------- 演習 ---------- */
+function viewPractice() {
+  const p = S.p;
+  if (p.screen === "sections") {
+    return `<h1>演習</h1>
+    <p class="small muted">セクションを選んでください。問題は毎回 AI が新しく作ります。</p>
+    <div class="stack">${SECTION_KEYS.map((k) => {
+      const e = estimate(k);
+      return `<button class="list-btn" data-a="p-section" data-v="${k}"><span class="sec-badge">${SECTIONS[k].letter}</span><span class="t"><b>${SECTIONS[k].en}</b><span class="small muted">${SECTIONS[k].ja}・${TASKS.filter((t) => t.section === k).length}タスク</span></span><span class="small num muted">推定 ${bandStr(e)}</span><span class="chev">›</span></button>`;
+    }).join("")}</div>
+    <section class="card">
+      <div class="switch"><div><b>練習モード</b><p class="small muted">オンにすると音声を何度でも聞けます。オフは本番どおり1回だけ。</p></div><button class="toggle" role="switch" aria-checked="${S.practiceMode}" aria-label="練習モード" data-a="toggle-practice"></button></div>
+    </section>`;
+  }
+  if (p.screen === "tasks") {
+    return `<h1>${SECTIONS[p.section].en}</h1>
+    <div class="stack">${TASKS.filter((t) => t.section === p.section).map((t) => {
+      const r = taskRate(t.id);
+      return `<button class="list-btn" data-a="p-task" data-v="${t.id}"><span class="t"><b>${esc(t.en)}</b><span class="small muted">${esc(t.ja)}・目安 ${t.mins}分</span></span>${r == null ? "" : `<span class="chip num ${r < 0.55 ? "bad" : r < 0.7 ? "warn" : "good"}">${Math.round(r * 100)}%</span>`}<span class="chev">›</span></button>`;
+    }).join("")}</div>`;
+  }
+  if (p.screen === "setup") return viewSetup();
+  if (p.screen === "loading") return viewLoading();
+  if (p.screen === "play") return viewPlay();
+  return "";
+}
+
+function viewSetup() {
+  const p = S.p; const t = TASK[p.taskId];
+  const ai = !!ENV.sample;
+  return `<h1>${esc(t.en)}</h1>
+  <p class="small muted">${esc(t.ja)}・本番の目安 ${t.mins}分</p>
+  <section class="card">
+    <div class="field"><label>難易度</label>
+      <div class="seg" role="group" aria-label="難易度">${Object.entries(DIFF).map(([k, d]) => `<button data-a="p-diff" data-v="${k}" aria-pressed="${p.difficulty === k}">${d.ja}<small>${d.sub}</small></button>`).join("")}</div>
+    </div>
+    <div class="field"><label for="topic">トピック（任意）</label>
+      <input class="input" id="topic" data-bind="topic" value="${esc(p.topic)}" placeholder="例：astronomy、空欄ならランダム">
+    </div>
+    <div class="switch"><div><b>公式サンプル準拠</b><p class="small muted">ETS 公開サンプルの文体・長さ・設問の型・誤答の作り方に合わせます（内容はオリジナル）。</p></div><button class="toggle" role="switch" aria-checked="${p.official}" aria-label="公式サンプル準拠" data-a="p-official"></button></div>
+  </section>
+  ${ai ? `<button class="btn primary block" data-a="p-generate">AI で問題を作る</button>
+         <button class="btn ghost block" data-a="p-sample">内蔵サンプルですぐ試す</button>`
+       : `<div class="notice"><b>AI 生成はこの画面では使えません</b>　Claude のアプリ内で開くと AI が毎回新しい問題を作ります。ここでは内蔵サンプルで流れを確かめられます。</div>
+         <button class="btn primary block" data-a="p-sample">サンプルで始める</button>`}`;
+}
+
+function viewLoading() {
+  return `<section class="card" aria-busy="true">
+    <div class="row between"><h3>問題を作っています…</h3><span class="small muted num" id="load-sec">0秒</span></div>
+    <p class="small muted">${esc(TASK[S.p.taskId].en)}・${DIFF[S.p.difficulty].ja}・${esc(S.p.topicUsed || "")}。数秒〜数十秒かかります。本番では解いている間に次のセットを先に作っておきます。</p>
+    <div class="skeleton" style="width:60%"></div><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton" style="width:80%"></div>
+    <div class="skeleton" style="height:44px;margin-top:8px"></div><div class="skeleton" style="height:44px"></div>
+  </section>
+  <button class="btn block" data-a="p-cancel">中止する</button>`;
+}
+
+function playbar() {
+  const p = S.p; const t = TASK[p.taskId];
+  const remain = t.mins * 60 - p.elapsed;
+  return `<div class="playbar">
+    <div class="row"><span class="chip accent">${esc(DIFF[p.difficulty].ja)}</span>${p.source === "ai" ? '<span class="chip good">AI 生成</span>' : '<span class="chip">サンプル</span>'}${p.official ? '<span class="chip">公式準拠</span>' : ""}</div>
+    <div class="row"><span class="timer ${remain < 0 ? "over" : ""}" id="timer">${fmtTime(remain)}</span>${p.done ? "" : `<button class="btn sm" data-a="p-pause">${p.paused ? "再開" : "一時停止"}</button>`}</div>
+  </div>`;
+}
+
+function viewPlay() {
+  const p = S.p; const t = TASK[p.taskId];
+  const body = {
+    words: engWords, mcq: engMcq, listen: engListen, choose: engChoose, build: engBuild, write: engWrite, repeat: engRepeat, interview: engInterview,
+  }[t.engine]();
+  return `${playbar()}
+  ${p.notice ? `<div class="notice">${p.notice}</div>` : ""}
+  ${p.done && p.summary ? summaryCard() : ""}
+  <div><h1>${esc(t.en)}</h1></div>
+  ${body}`;
+}
+
+function summaryCard() {
+  const p = S.p; const s = p.summary;
+  return `<section class="card" style="border-color:var(--accent)">
+    <div class="row between wrap">
+      <div class="big-score">${s.band != null ? `<b>${s.band.toFixed(1)}</b><span class="muted">band</span>` : `<b>${s.correct}/${s.total}</b><span class="muted">正解</span>`}</div>
+      <span class="small muted num">所要 ${fmtTime(p.elapsed)}</span>
+    </div>
+    ${s.note ? `<p class="small muted">${esc(s.note)}</p>` : ""}
+    <div class="grid2">
+      <button class="btn primary" data-a="p-again">もう1セット</button>
+      <button class="btn" data-a="p-home">演習トップへ</button>
+    </div>
+    <p class="small muted">結果は保存され、ホームの推定スコアと学習量に反映されました。</p>
+  </section>`;
+}
+
+function optButtons(qKey, q, picked, done) {
+  return `<div class="opts">${q.options.map((o, i) => {
+    let cls = "";
+    if (done) { if (i === q.answer) cls = "correct"; else if (i === picked) cls = "wrong"; }
+    return `<button class="opt ${cls}" data-a="pick" data-q="${qKey}" data-v="${i}" aria-pressed="${picked === i}" ${done ? "disabled" : ""}><span class="bub">${LETTERS[i]}</span><span>${esc(o)}</span></button>`;
+  }).join("")}</div>`;
+}
+function mcqList(questions, prefix = "q") {
+  const p = S.p;
+  return questions.map((q, i) => {
+    const k = prefix + i; const picked = p.ans[k];
+    return `<div class="q"><p class="q-stem"><span class="muted num">${i + 1}.</span> ${esc(q.q)}</p>${optButtons(k, q, picked, p.done)}${p.done ? `<p class="expl">${picked === q.answer ? "◯ " : "✕ "}${esc(q.explanation_ja || "")}</p>` : ""}</div>`;
+  }).join("");
+}
+function submitBtn(label, ready) {
+  return S.p.done ? "" : `<button class="btn primary block" data-a="p-submit" ${ready ? "" : "disabled"}>${label}</button>`;
+}
+
+/* --- Complete the Words --- */
+function parseWords(text) {
+  const parts = String(text).split(/\[\[([^\]]+)\]\]/);
+  const blanks = [];
+  for (let i = 1; i < parts.length; i += 2) blanks.push(parts[i]);
+  return { parts, blanks };
+}
+function engWords() {
+  const p = S.p; const d = p.set; const { parts } = parseWords(d.text);
+  let html = ""; let bi = 0;
+  parts.forEach((seg, i) => {
+    if (i % 2 === 0) { html += esc(seg); return; }
+    const w = seg; const show = w.slice(0, Math.floor(w.length / 2)); const rest = w.slice(show.length);
+    const k = "b" + bi; const val = p.ans[k] || "";
+    let cls = ""; let fix = "";
+    if (p.done) { const ok = val.trim().toLowerCase() === rest.toLowerCase(); cls = ok ? "ok" : "ng"; if (!ok) fix = `<span class="fix">${esc(rest)}</span>`; }
+    html += `<span class="blank">${esc(show)}<input id="ta-${k}" data-bind="ans.${k}" value="${esc(val)}" maxlength="${rest.length}" style="--n:${rest.length}" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="${bi + 1}番目の空欄（${rest.length}文字）" class="${cls}" ${p.done ? "disabled" : ""}>${fix}</span>`;
+    bi++;
+  });
+  return `<p class="small muted">段落を読み、欠けている文字を入力してください。各語の前半だけが表示されています。</p>
+  <section class="card"><p class="passage-title">${esc(d.title || "")}</p><p class="passage">${html}</p></section>
+  ${p.done && d.notes_ja ? `<p class="expl">${esc(d.notes_ja)}</p>` : ""}
+  ${submitBtn("採点する", true)}`;
+}
+
+/* --- 読解の選択式 --- */
+function engMcq() {
+  const p = S.p; const d = p.set;
+  const ready = d.questions.every((_, i) => p.ans["q" + i] != null);
+  return `<section class="card">${d.genre ? `<span class="chip" style="justify-self:start">${esc(d.genre)}</span>` : ""}<p class="passage-title">${esc(d.title || "")}</p><p class="passage">${esc(d.text)}</p></section>
+  <section class="card">${mcqList(d.questions)}</section>
+  ${submitBtn("採点する", ready)}`;
+}
+
+/* --- 音声プレーヤー --- */
+function audioBox(key, lines, label) {
+  const p = S.p;
+  const played = p.played[key];
+  const playing = p.playing === key;
+  const can = Speech.available();
+  const locked = played && !S.practiceMode && !p.done;
+  if (!can) {
+    return `<div class="audio-box"><div class="notice"><b>この環境では音声を再生できません</b>　代わりにスクリプトを表示します。</div><div class="script">${lines.map((l) => `<p><b>${esc(l.speaker)}</b>${esc(l.text)}</p>`).join("")}</div></div>`;
+  }
+  return `<div class="audio-box">
+    <button class="btn ${played ? "" : "primary"} play-btn" data-a="play" data-v="${key}" ${locked || (p.playing && !playing) ? "disabled" : ""}>
+      ${playing ? '<span class="wave"><i></i><i></i><i></i><i></i></span> 再生中（タップで停止）' : `${ICONS.play} ${played ? (locked ? "再生済み（本番は1回のみ）" : "もう一度聞く") : esc(label || "音声を再生")}`}
+    </button>
+  </div>`;
+}
+
+/* --- Listen to a Conversation / Announcement / Academic Talk --- */
+function engListen() {
+  const p = S.p; const d = p.set;
+  const show = p.played.main || !Speech.available() || p.done;
+  const ready = d.questions.every((_, i) => p.ans["q" + i] != null);
+  return `<section class="card">
+    <p class="small muted">${esc(d.setting_ja || "")}</p>
+    ${audioBox("main", d.lines, "音声を再生して始める")}
+    ${p.done && Speech.available() ? `<details><summary class="small" style="font-weight:700;cursor:pointer">スクリプトを見る</summary><div class="script" style="margin-top:8px">${d.lines.map((l) => `<p><b>${esc(l.speaker)}</b>${esc(l.text)}</p>`).join("")}</div></details>` : ""}
+  </section>
+  ${show ? `<section class="card">${mcqList(d.questions)}</section>${submitBtn("採点する", ready)}` : `<p class="small muted">音声を聞き終えると設問が表示されます。メモを取りながら聞きましょう。</p>`}`;
+}
+
+/* --- Listen and Choose a Response --- */
+function engChoose() {
+  const p = S.p; const d = p.set;
+  const ready = d.items.every((_, i) => p.ans["q" + i] != null);
+  return `<p class="small muted">短い発言を聞き、最も自然な応答を選んでください。</p>
+  ${d.items.map((it, i) => {
+    const k = "q" + i; const q = { options: it.options, answer: it.answer };
+    return `<section class="card"><div class="row between"><b class="num">${i + 1} / ${d.items.length}</b>${audioBox("u" + i, [{ speaker: it.speaker, text: it.utterance }], "発言を聞く")}</div>
+      ${p.done || !Speech.available() ? `<p class="bubble">${esc(it.utterance)}</p>` : ""}
+      ${optButtons(k, q, p.ans[k], p.done)}
+      ${p.done ? `<p class="expl">${p.ans[k] === it.answer ? "◯ " : "✕ "}${esc(it.explanation_ja || "")}</p>` : ""}
+    </section>`;
+  }).join("")}
+  ${submitBtn("採点する", ready)}`;
+}
+
+/* --- Build a Sentence --- */
+function engBuild() {
+  const p = S.p; const d = p.set;
+  const ready = d.items.every((it, i) => (p.ans["s" + i] || []).length === it.chunks.length);
+  return `<p class="small muted">語句をタップして返答文を完成させてください。使わない語句が1つ混ざっています。</p>
+  ${d.items.map((it, i) => {
+    const order = p.ans["s" + i] || [];
+    const bank = p.banks[i];
+    const ok = p.done && order.map((ci) => bank[ci].idx).join("|") === it.chunks.map((_, j) => j).join("|");
+    return `<section class="card">
+      <p class="bubble">${esc(it.context)}</p>
+      <div class="slots ${p.done ? (ok ? "ok" : "ng") : ""}" aria-label="あなたの返答">${order.length ? order.map((ci, pos) => `<button class="tile placed" data-a="unplace" data-i="${i}" data-v="${pos}" ${p.done ? "disabled" : ""}>${esc(bank[ci].text)}</button>`).join("") : '<span class="small muted">ここに語句が並びます</span>'}</div>
+      ${p.done ? "" : `<div class="bank">${bank.map((c, ci) => `<button class="tile" data-a="place" data-i="${i}" data-v="${ci}" ${order.includes(ci) ? "disabled" : ""}>${esc(c.text)}</button>`).join("")}</div>`}
+      ${p.done ? `<p class="expl">${ok ? "◯ " : "✕ 正解：" + esc(it.chunks.join(" ")) + "<br>"}${esc(it.explanation_ja || "")}<br><span class="muted small">ダミー：${esc(it.distractor)}</span></p>` : ""}
+    </section>`;
+  }).join("")}
+  ${submitBtn("採点する", ready)}`;
+}
+
+/* --- Write an Email / Academic Discussion --- */
+function wordCount(s) { return (String(s || "").trim().match(/[A-Za-z0-9'’-]+/g) || []).length; }
+function engWrite() {
+  const p = S.p; const d = p.set; const t = TASK[p.taskId];
+  const prompt = t.id === "email"
+    ? `<section class="card"><p class="small muted">${esc(d.situation_ja || "")}</p><p class="passage">${esc(d.situation)}</p><p class="small"><b>宛先：</b>${esc(d.recipient || "")}</p><p class="small"><b>メールに含めること：</b></p><ul class="fb-list passage" style="font-size:15px">${d.tasks.map((x) => `<li>${esc(x)}</li>`).join("")}</ul><p class="small muted">目安：120語以上</p></section>`
+    : `<section class="card"><p class="small muted">${esc(d.question_ja || "")}</p><span class="chip" style="justify-self:start">${esc(d.course || "")}</span>
+       <div class="post prof"><b>${esc(d.professor.name)}（教授）</b><p>${esc(d.professor.text)}</p></div>
+       ${d.students.map((s) => `<div class="post"><b>${esc(s.name)}</b><p>${esc(s.text)}</p></div>`).join("")}
+       <p class="small muted">目安：100語以上。自分の意見を理由とともに書き、議論に新しい視点を加えましょう。</p></section>`;
+  const text = p.texts?.main || "";
+  return `${prompt}
+  ${p.done ? `<section class="card"><h2>あなたの解答</h2><p class="passage" style="font-size:15px">${esc(text)}</p><p class="small muted num">${wordCount(text)} 語</p></section>${feedbackView()}` : p.scoring ? scoringView() : `
+  <div class="field"><label for="ta-main">解答（英語）</label><textarea class="input" id="ta-main" data-bind="texts.main" placeholder="${t.id === "email" ? "Dear Jordan," : "I believe..."}" autocapitalize="sentences" spellcheck="false">${esc(text)}</textarea><p class="small muted num" id="wc">${wordCount(text)} 語</p></div>
+  <button class="btn primary block" data-a="p-score" ${wordCount(text) < 20 ? "disabled" : ""} id="score-btn">AI に採点してもらう</button>
+  ${ENV.sample ? "" : '<p class="small muted">この環境では AI 採点が使えないため、デモ用の固定フィードバックを表示します。</p>'}`}`;
+}
+function scoringView() {
+  return `<section class="card" aria-busy="true"><h3>採点しています…</h3><p class="small muted">band、総評、修正例、模範解答を作っています。</p><div class="skeleton"></div><div class="skeleton" style="width:70%"></div><div class="skeleton"></div></section><button class="btn block" data-a="p-cancel-score">中止する</button>`;
+}
+function feedbackView() {
+  const f = S.p.feedback; if (!f) return "";
+  return `<section class="card">
+    <h2>AI 採点</h2>
+    ${f.demo ? '<div class="notice"><b>デモ用の固定フィードバック</b>　AI が使える環境では、あなたの解答に合わせた講評が出ます。</div>' : ""}
+    <p>${esc(f.summary_ja)}</p>
+    ${f.strengths_ja?.length ? `<div><b class="small" style="color:var(--good)">良い点</b><ul class="fb-list small">${f.strengths_ja.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}
+    ${f.improvements_ja?.length ? `<div><b class="small" style="color:var(--warn)">改善点</b><ul class="fb-list small">${f.improvements_ja.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}
+    ${f.corrections?.length ? `<div class="stack"><b class="small">修正例</b>${f.corrections.slice(0, 5).map((c) => `<div class="corr"><span class="from">${esc(c.original)}</span><span class="to">${esc(c.better)}</span><span class="small muted">${esc(c.why_ja)}</span></div>`).join("")}</div>` : ""}
+    ${f.per_question?.length ? `<div class="stack"><b class="small">質問ごと</b>${f.per_question.map((q, i) => `<div class="corr"><b class="small">Q${i + 1}</b><span class="small">${esc(q.comment_ja)}</span><span class="to" style="font-weight:400">${esc(q.better_answer)}</span></div>`).join("")}</div>` : ""}
+    ${f.model_answer ? `<details><summary class="small" style="font-weight:700;cursor:pointer">高得点の模範解答</summary><p class="passage" style="font-size:15px;margin-top:8px">${esc(f.model_answer)}</p></details>` : ""}
+    <p class="small muted">${TASK[S.p.taskId].section === "speaking" ? "文字起こしからは発音や流暢さは分かりません。内容・語彙・文法にもとづく目安です。" : "AI による目安の採点です。"}</p>
+  </section>`;
+}
+
+/* --- Listen and Repeat --- */
+function tokens(s) { return String(s).toLowerCase().replace(/[’']/g, "'").match(/[a-z0-9']+/g) || []; }
+function lcsDiff(orig, said) {
+  const a = tokens(orig), b = tokens(said);
+  const dp = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
+  for (let i = a.length - 1; i >= 0; i--) for (let j = b.length - 1; j >= 0; j--) dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+  const marks = []; const extra = []; let i = 0, j = 0;
+  while (i < a.length && j < b.length) {
+    if (a[i] === b[j]) { marks.push({ w: a[i], hit: true }); i++; j++; }
+    else if (dp[i + 1][j] >= dp[i][j + 1]) { marks.push({ w: a[i], hit: false }); i++; }
+    else { extra.push(b[j]); j++; }
+  }
+  while (i < a.length) marks.push({ w: a[i++], hit: false });
+  while (j < b.length) extra.push(b[j++]);
+  const hit = marks.filter((m) => m.hit).length;
+  return { marks, extra, hit, total: a.length, rate: a.length ? hit / a.length : 0 };
+}
+function speakInput(key, placeholder) {
+  const p = S.p; const listening = Dict.listening && Dict.target === key;
+  return `<div class="field">
+    ${ENV.dict ? `<button class="btn ${listening ? "primary" : ""}" data-a="${listening ? "dict-stop" : "dict-start"}" data-v="${key}">${ICONS.mic} ${listening ? "話し終えたらタップ" : "話して答える"}</button>` : ""}
+    <textarea class="input" id="ta-${key}" data-bind="texts.${key}" style="min-height:80px" placeholder="${esc(placeholder)}" autocapitalize="sentences" spellcheck="false">${esc(p.texts?.[key] || "")}</textarea>
+    <p class="small muted">${ENV.dict ? "マイクで話すと文字になります。直接入力もできます。" : "この環境では音声入力が使えないため、聞き取った英文を入力してください。"}本番は録音して文字起こしします。</p>
+  </div>`;
+}
+function engRepeat() {
+  const p = S.p; const d = p.set; const i = p.step;
+  if (p.done) {
+    const rows = d.sentences.map((s, k) => { const r = lcsDiff(s, p.texts?.["r" + k] || ""); return `<div class="q"><div class="row between"><b class="num small">${k + 1}</b><span class="chip num ${r.rate >= 0.9 ? "good" : r.rate >= 0.6 ? "warn" : "bad"}">${Math.round(r.rate * 100)}%</span></div><p class="passage" style="font-size:15.5px">${r.marks.map((m) => `<span class="diff-word ${m.hit ? "hit" : "miss"}">${esc(m.w)}</span>`).join(" ")}</p>${r.extra.length ? `<p class="small muted">違った語：${esc(r.extra.join(", "))}</p>` : ""}</div>`; }).join("");
+    return `<section class="card"><h2>単語ごとの一致（LCS）</h2>${rows}<p class="small muted">緑＝言えた語、赤の取り消し線＝抜けた語。文字起こしからは発音や流暢さは分かりません。</p></section>`;
+  }
+  const cur = d.sentences[i];
+  return `<p class="small muted">${esc(d.setting_ja || "")}文を聞いて、そのまま繰り返してください。文は少しずつ長くなります。</p>
+  <section class="card">
+    <div class="row between"><b class="num">${i + 1} / 7</b><span class="small muted num">${tokens(cur).length} 語</span></div>
+    ${audioBox("r" + i, [{ speaker: "guide", text: cur }], "文を聞く")}
+    ${speakInput("r" + i, "聞いた文を繰り返す")}
+    ${i < 6 ? `<button class="btn primary block" data-a="rep-next">次の文へ</button>` : `<button class="btn primary block" data-a="p-submit">採点する</button>`}
+  </section>`;
+}
+
+/* --- Take an Interview --- */
+function engInterview() {
+  const p = S.p; const d = p.set; const i = p.step;
+  if (p.done || p.scoring) {
+    return `<section class="card"><h2>あなたの回答</h2>${d.questions.map((q, k) => `<div class="q"><p class="q-stem">Q${k + 1}. ${esc(q)}</p><p class="passage" style="font-size:15px">${esc(p.texts?.["i" + k] || "（回答なし）")}</p></div>`).join("")}</section>${p.scoring ? scoringView() : feedbackView()}`;
+  }
+  const remain = 45 - (p.qElapsed || 0);
+  return `<p class="small muted">テーマ：${esc(d.topic_ja || d.topic)}。質問を聞いて、45秒で答えてください。</p>
+  ${i === 0 ? `<section class="card"><p class="bubble">${esc(d.intro)}</p></section>` : ""}
+  <section class="card">
+    <div class="row between"><b class="num">Q${i + 1} / 4</b><span class="timer num ${remain < 0 ? "over" : ""}" id="qtimer">${p.qRunning ? fmtTime(remain) : "0:45"}</span></div>
+    ${audioBox("q" + i, i === 0 ? [{ speaker: "interviewer", text: d.intro }, { speaker: "interviewer", text: d.questions[0] }] : [{ speaker: "interviewer", text: d.questions[i] }], "質問を聞く")}
+    ${p.played["q" + i] || !Speech.available() ? `<p class="q-stem">${esc(d.questions[i])}</p>` : ""}
+    ${speakInput("i" + i, "Your answer…")}
+    ${i < 3 ? `<button class="btn primary block" data-a="int-next">次の質問へ</button>` : `<button class="btn primary block" data-a="p-score">AI に採点してもらう</button>`}
+  </section>`;
+}
+
+/* ---------- 復習 ---------- */
+function viewReview() {
+  const open = S.mistakes.filter((m) => !m.resolved || m.keepOpen);
+  const done = S.mistakes.filter((m) => m.resolved && !m.keepOpen);
+  return `<h1>復習</h1>
+  <section class="card">
+    <div class="row between"><h2 style="margin:0">間違えた問題</h2><span class="chip ${open.length ? "bad" : "good"} num">${open.length} 問</span></div>
+    ${open.length ? open.map((m) => mistakeItem(m)).join("") : '<p class="small muted">未解決の問題はありません。</p>'}
+    ${done.length ? `<p class="small muted">解き直して正解した問題：${done.length} 問</p>` : ""}
+  </section>
+  <section class="card">
+    <div class="row between"><h2 style="margin:0">単語帳</h2><span class="chip num">${S.vocab.length} 語</span></div>
+    <ul class="plain stack">${S.vocab.map((v, i) => `<li class="q"><div class="row between"><b style="font-family:var(--font-text);font-size:16px">${esc(v.word)}</b><button class="btn sm ghost" data-a="vocab-del" data-v="${i}" aria-label="${esc(v.word)} を削除">削除</button></div><span class="small">${esc(v.meaning_ja)}</span>${v.example ? `<span class="small muted" style="font-family:var(--font-text)">${esc(v.example)}</span>` : ""}</li>`).join("")}</ul>
+    <div class="grid2"><input class="input" id="vw" data-bind="vw" placeholder="単語・表現"><input class="input" id="vm" data-bind="vm" placeholder="意味"></div>
+    <button class="btn" data-a="vocab-add">単語帳に追加</button>
+  </section>`;
+}
+function mistakeItem(m) {
+  const t = TASK[m.task]; const isOpen = S.review.open === m.id; const r = S.review;
+  return `<div class="q">
+    <div class="row between"><span class="small"><b>${esc(t.en)}</b> <span class="muted">${new Date(m.date).toLocaleDateString("ja-JP")}</span></span>${isOpen ? "" : `<button class="btn sm" data-a="rev-open" data-v="${m.id}">解き直す</button>`}</div>
+    <p class="q-stem" style="font-size:15px">${esc(m.q.q)}</p>
+    ${isOpen ? `<div class="opts">${m.q.options.map((o, i) => { let cls = ""; if (r.picked != null) { if (i === m.q.answer) cls = "correct"; else if (i === r.picked) cls = "wrong"; } return `<button class="opt ${cls}" data-a="rev-pick" data-v="${i}" ${r.picked != null ? "disabled" : ""}><span class="bub">${LETTERS[i]}</span><span>${esc(o)}</span></button>`; }).join("")}</div>
+      ${r.picked != null ? `<p class="expl">${r.picked === m.q.answer ? "◯ 正解。この問題は解決済みになりました。" : "✕ もう一度確認しましょう。"}<br>${esc(m.q.explanation_ja || "")}</p><button class="btn sm" data-a="rev-close">閉じる</button>` : ""}` : ""}
+  </div>`;
+}
+
+/* ---------- 目標 ---------- */
+function viewGoals() {
+  const g = S.goals;
+  const stepper = (key, label) => `<span>${label}${key === "total" ? "" : ""}</span><span class="stepper"><button data-a="g-step" data-k="${key}" data-v="-0.5" aria-label="${label}を下げる">−</button><span class="num">${g[key].toFixed(1)}</span><button data-a="g-step" data-k="${key}" data-v="0.5" aria-label="${label}を上げる">＋</button></span>`;
+  return `<h1>目標</h1>
+  <section class="card">
+    <h2>目標スコア（1〜6 band）</h2>
+    <div class="goal-grid">
+      ${stepper("total", "合計")}
+      <span class="small muted" style="grid-column:1/-1;margin-top:-6px">0–120 換算の目安：<b class="num">${BAND_TO_120[g.total]}</b>（移行期間の参考表示）</span>
+      ${SECTION_KEYS.map((k) => stepper(k, SECTIONS[k].en)).join("")}
+    </div>
+  </section>
+  <section class="card">
+    <div class="field"><label for="exam">受験日</label><input class="input" type="date" id="exam" data-bind="goals.examDate" value="${esc(g.examDate)}"></div>
+  </section>
+  <section class="card">
+    <h2>週あたりの学習目標</h2>
+    <div class="goal-grid">
+      <span>学習時間</span><span class="stepper"><button data-a="g-num" data-k="weeklyMinutes" data-v="-30" aria-label="学習時間を減らす">−</button><span class="num">${g.weeklyMinutes}分</span><button data-a="g-num" data-k="weeklyMinutes" data-v="30" aria-label="学習時間を増やす">＋</button></span>
+      <span>セット数</span><span class="stepper"><button data-a="g-num" data-k="weeklySets" data-v="-1" aria-label="セット数を減らす">−</button><span class="num">${g.weeklySets}</span><button data-a="g-num" data-k="weeklySets" data-v="1" aria-label="セット数を増やす">＋</button></span>
+    </div>
+    <p class="small muted">${planHint()}</p>
+  </section>
+  <p class="small muted">変更はすぐにホームの「目標との差」と「次の1セット」に反映されます。0–120 換算はデモ用の仮値です。</p>`;
+}
+function planHint() {
+  const g = S.goals; const days = Math.ceil((new Date(g.examDate + "T00:00:00") - today0()) / DAY);
+  if (!(days > 0)) return "受験日を未来の日付にしてください。";
+  const weeks = Math.max(1, Math.round(days / 7));
+  return `受験日まで約${weeks}週。このペースだと合計 ${weeks * g.weeklySets} セット・${Math.round((weeks * g.weeklyMinutes) / 60)} 時間ほど学習できます。`;
+}
+
+/* ============================================================
+ * 動作
+ * ============================================================ */
+let tick = null;
+function afterRender() {
+  clearInterval(tick);
+  const p = S.p;
+  if (S.tab === "practice" && p.screen === "play" && !p.done) {
+    tick = setInterval(() => {
+      if (!p.paused) p.elapsed += 1;
+      const t = TASK[p.taskId]; const el = document.getElementById("timer");
+      if (el) { const r = t.mins * 60 - p.elapsed; el.textContent = fmtTime(r); el.classList.toggle("over", r < 0); }
+      if (p.qRunning) { p.qElapsed = (p.qElapsed || 0) + 1; const q = document.getElementById("qtimer"); if (q) { q.textContent = fmtTime(45 - p.qElapsed); q.classList.toggle("over", p.qElapsed > 45); } }
+    }, 1000);
+  }
+  if (S.tab === "practice" && p.screen === "loading") {
+    const t0 = p.loadStart;
+    tick = setInterval(() => { const el = document.getElementById("load-sec"); if (el) el.textContent = Math.round((Date.now() - t0) / 1000) + "秒"; }, 500);
+  }
+}
+
+function newPractice(taskId, extra = {}) {
+  const t = TASK[taskId];
+  S.p = { screen: "setup", section: t.section, taskId, difficulty: S.p.difficulty || "standard", topic: "", official: !!S.p.official, ...extra };
+}
+function startPlay(set, source, notice) {
+  const p = S.p; const t = TASK[p.taskId];
+  Object.assign(p, { screen: "play", set, source, notice: notice || "", ans: {}, texts: {}, played: {}, playing: null, done: false, elapsed: 0, paused: false, step: 0, summary: null, feedback: null, scoring: false, qElapsed: 0, qRunning: false });
+  if (t.engine === "build") {
+    p.banks = set.items.map((it, i) => shuffle([...it.chunks.map((c, j) => ({ text: c, idx: j })), { text: it.distractor, idx: -1 }], Date.now() % 1000 + i * 17 + 3));
+  }
+  window.scrollTo(0, 0);
+  render();
+}
+
+let genCtl = null;
+async function generate() {
+  const p = S.p; const t = TASK[p.taskId];
+  const recent = S.attempts.filter((a) => !a.seed && a.topic).slice(-5).map((a) => a.topic);
+  const pool = TOPICS.filter((x) => !recent.includes(x));
+  const topic = p.topic.trim() || pool[Math.floor(Math.random() * pool.length)] || TOPICS[0];
+  const seed = Math.random().toString(36).slice(2, 8);
+  Object.assign(p, { screen: "loading", loadStart: Date.now(), topicUsed: topic });
+  render();
+  const prompt = `You are an expert TOEFL iBT item writer for the updated (2026) format. Create ONE wholly original practice set for the task "${t.en}" (${t.section} section). Difficulty: ${DIFF[p.difficulty].prompt}. Topic: ${topic}. Variation seed: ${seed}. Explanations must be in Japanese. Vary which option letter is correct. Return ONLY JSON matching the schema.${p.official ? " Model style, length, question stems and distractor logic closely on ETS's officially published TOEFL iBT sample questions, but never reproduce any real item." : ""}\n\nSchema:\n${SCHEMA[t.id]}`;
+  genCtl = new AbortController();
+  const ctl = genCtl;
+  let lastErr = null;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const data = await ENV.sample.json(prompt, { signal: ctl.signal, modelTier: "default", cache: false });
+      if (ctl.signal.aborted || S.p !== p) return;
+      if (VALIDATE[t.id](data)) { p.topicSaved = topic; startPlay(data, "ai"); return; }
+      lastErr = { code: "invalid_shape" };
+    } catch (e) {
+      if (e?.code === "cancelled" || ctl.signal.aborted) return;
+      lastErr = e;
+      if (["not_granted", "rate_limited", "sampling_disabled", "capability_disabled"].includes(e?.code)) break;
+    }
+  }
+  if (S.p !== p) return;
+  const why = lastErr?.code === "not_granted" ? "AI の利用が許可されませんでした" : lastErr?.code === "rate_limited" ? "AI の利用が混み合っています" : "AI が作った問題の形式が正しくありませんでした";
+  p.topicSaved = null;
+  startPlay(SAMPLES[t.id], "sample", `<b>${why}。</b>内蔵サンプルに切り替えました。`);
+}
+
+const DEMO_FEEDBACK = {
+  writing: { band: 4.0, summary_ja: "要件にはおおむね触れられていますが、理由の説明が短く、文のつながりが単調です。具体例を1つ加え、接続表現で論理を見せるとさらに上がります。", strengths_ja: ["3つの要件すべてに触れている", "メールとして自然な書き出しと結びになっている"], improvements_ja: ["理由をもう一文、具体的に説明する", "because / so だけでなく however, as a result なども使う", "同じ単語の繰り返しを減らす"], corrections: [{ original: "I can't go because I have a work.", better: "I can't make it because I have to work that day.", why_ja: "work は「仕事」の意味では不可算。make it（都合がつく）も自然です。" }], model_answer: "Dear Jordan,\n\nThank you for organizing this Saturday's hike. Unfortunately, I won't be able to join because I have a part-time shift that I can't change. I was really looking forward to it.\n\nWould it be possible for me to join the next trip later this month? If you share the schedule, I'll make sure to keep that day free.\n\nIn the meantime, I'd be happy to help the club in other ways. For example, I could design a poster for the spring recruitment event or help plan future routes.\n\nBest regards,\nAlex" },
+  speaking: { band: 3.5, summary_ja: "質問の意図は理解できています。答えが短めなので、理由と具体例をセットで話すと時間を有効に使えます。", strengths_ja: ["各質問にまず結論から答えている"], improvements_ja: ["理由を2つ挙げて45秒を使い切る", "For example, ... で自分の体験を入れる"], corrections: [{ original: "I think phone is bad.", better: "I think banning phones in class is a good idea.", why_ja: "質問の言葉を使って立場をはっきり言うと伝わりやすくなります。" }], per_question: [{ comment_ja: "体験の場面をもう少し具体的に。", better_answer: "Last year I used a language app every morning on the train, and in three months I could read simple news articles in Spanish." }], model_answer: "I think it's a good idea for schools to ban phones in classrooms. First, phones are a huge distraction..." },
+};
+let scoreCtl = null;
+async function score() {
+  const p = S.p; const t = TASK[p.taskId]; const d = p.set;
+  p.scoring = true; p.qRunning = false; render();
+  const isSpeak = t.section === "speaking";
+  let taskDesc, response;
+  if (t.id === "email") { taskDesc = `Situation: ${d.situation}\nRecipient: ${d.recipient}\nThe email must: ${d.tasks.map((x, i) => `(${i + 1}) ${x}`).join(" ")}\nTime limit: 7 minutes.`; response = p.texts.main; }
+  else if (t.id === "discussion") { taskDesc = `Course: ${d.course}\nProfessor ${d.professor.name}: ${d.professor.text}\n${d.students.map((s) => `${s.name}: ${s.text}`).join("\n")}\nTime limit: 10 minutes.`; response = p.texts.main; }
+  else { taskDesc = `Interview topic: ${d.topic}. The test taker answers each question in 45 seconds. Responses are speech transcripts (no pronunciation information).`; response = d.questions.map((q, i) => `Q${i + 1}: ${q}\nA${i + 1}: ${p.texts["i" + i] || "(no response)"}`).join("\n\n"); }
+  const schema = `{"band": number /* 1-6 in 0.5 steps */, "summary_ja": string, "strengths_ja": [strings], "improvements_ja": [strings], "corrections": [up to 5 x {"original": string, "better": string, "why_ja": string}], "model_answer": string${isSpeak ? ', "per_question": [4 x {"comment_ja": string, "better_answer": string}]' : ""}}`;
+  const prompt = `You are an experienced TOEFL iBT rater for the updated (2026) format. Score the test taker's response to the "${t.en}" task on the 1-6 band scale in 0.5 steps, judging task completion, development, organization, vocabulary and grammar${isSpeak ? " (content, vocabulary and grammar only, since this is a transcript)" : ""}. Write all feedback in Japanese, except "original", "better", "better_answer" and "model_answer", which are in English. Return ONLY JSON matching the schema.\n\nTASK\n${taskDesc}\n\nRESPONSE\n${response}\n\nSchema:\n${schema}`;
+  let fb = null;
+  if (ENV.sample) {
+    scoreCtl = new AbortController();
+    try {
+      const r = await ENV.sample.json(prompt, { signal: scoreCtl.signal, modelTier: "default", cache: false });
+      if (S.p !== p) return;
+      if (r && typeof r.band === "number") fb = { ...r, band: clamp(round05(r.band), 1, 6) };
+    } catch (e) {
+      if (e?.code === "cancelled") return;
+    }
+  }
+  if (S.p !== p) return;
+  if (!fb) fb = { ...DEMO_FEEDBACK[isSpeak ? "speaking" : "writing"], demo: true };
+  p.feedback = fb; p.scoring = false;
+  finish({ band: fb.band, note: fb.demo ? "デモ用の固定フィードバックです。" : "AI による目安の採点です。" });
+}
+
+function finish(result) {
+  const p = S.p; const t = TASK[p.taskId];
+  p.done = true; p.summary = result;
+  Speech.stop();
+  const attempt = { id: "a" + Date.now(), task: t.id, section: t.section, difficulty: p.difficulty, date: Date.now(), duration: p.elapsed, topic: p.topicSaved || null };
+  if (result.band != null) attempt.band = result.band; else { attempt.correct = result.correct; attempt.total = result.total; }
+  S.attempts.push(attempt);
+  (result.mistakes || []).forEach((q, i) => S.mistakes.unshift({ id: attempt.id + "-" + i, task: t.id, q, date: Date.now(), resolved: false }));
+  persist();
+  window.scrollTo(0, 0);
+  render();
+}
+
+function grade() {
+  const p = S.p; const t = TASK[p.taskId]; const d = p.set;
+  if (t.engine === "words") {
+    const { blanks } = parseWords(d.text);
+    const correct = blanks.filter((w, i) => (p.ans["b" + i] || "").trim().toLowerCase() === w.slice(Math.floor(w.length / 2)).toLowerCase()).length;
+    return finish({ correct, total: blanks.length });
+  }
+  if (t.engine === "mcq" || t.engine === "listen") {
+    const wrong = d.questions.filter((q, i) => p.ans["q" + i] !== q.answer);
+    return finish({ correct: d.questions.length - wrong.length, total: d.questions.length, mistakes: wrong });
+  }
+  if (t.engine === "choose") {
+    const wrong = d.items.filter((it, i) => p.ans["q" + i] !== it.answer);
+    return finish({ correct: d.items.length - wrong.length, total: d.items.length, mistakes: wrong.map((it) => ({ q: "(Audio) " + it.utterance, options: it.options, answer: it.answer, explanation_ja: it.explanation_ja })) });
+  }
+  if (t.engine === "build") {
+    const correct = d.items.filter((it, i) => (p.ans["s" + i] || []).map((ci) => p.banks[i][ci].idx).join("|") === it.chunks.map((_, j) => j).join("|")).length;
+    return finish({ correct, total: d.items.length });
+  }
+  if (t.engine === "repeat") {
+    const rs = d.sentences.map((s, k) => lcsDiff(s, p.texts["r" + k] || ""));
+    const avg = rs.reduce((s, r) => s + r.rate, 0) / rs.length;
+    return finish({ correct: rs.filter((r) => r.rate >= 0.8).length, total: 7, note: `単語の一致率 平均 ${Math.round(avg * 100)}%。80%以上の文を正解として数えています。` });
+  }
+}
+
+/* ---------- イベント ---------- */
+const A = {
+  tab(el) { Speech.stop(); Dict.stop(); S.tab = el.dataset.v; window.scrollTo(0, 0); render(); },
+  "start-rec"(el) { newPractice(el.dataset.v); S.tab = "practice"; window.scrollTo(0, 0); render(); },
+  "toggle-practice"() { S.practiceMode = !S.practiceMode; persist(); render(); },
+  "p-section"(el) { S.p = { screen: "tasks", section: el.dataset.v }; render(); },
+  "p-task"(el) { newPractice(el.dataset.v); render(); },
+  "p-back"() {
+    const p = S.p; Speech.stop(); Dict.stop(); genCtl?.abort(); scoreCtl?.abort();
+    if (p.screen === "tasks") S.p = { screen: "sections" };
+    else if (p.screen === "setup") S.p = { screen: "tasks", section: p.section };
+    else { p.screen = "setup"; }
+    render();
+  },
+  "p-diff"(el) { S.p.difficulty = el.dataset.v; render(); },
+  "p-official"() { S.p.official = !S.p.official; render(); },
+  "p-generate"() { generate(); },
+  "p-sample"() { S.p.topicSaved = null; startPlay(SAMPLES[S.p.taskId], "sample"); },
+  "p-cancel"() { genCtl?.abort(); S.p.screen = "setup"; render(); },
+  "p-cancel-score"() { scoreCtl?.abort(); S.p.scoring = false; render(); },
+  "p-pause"() { S.p.paused = !S.p.paused; render(); },
+  "p-submit"() { Speech.stop(); Dict.stop(); grade(); },
+  "p-score"() { Speech.stop(); Dict.stop(); score(); },
+  "p-again"() { const p = S.p; newPractice(p.taskId, { difficulty: p.difficulty, topic: p.topic, official: p.official }); render(); },
+  "p-home"() { S.p = { screen: "sections" }; render(); },
+  pick(el) { if (S.p.done) return; S.p.ans[el.dataset.q] = Number(el.dataset.v); render(); },
+  place(el) { const i = el.dataset.i; const k = "s" + i; S.p.ans[k] = [...(S.p.ans[k] || []), Number(el.dataset.v)]; render(); },
+  unplace(el) { const k = "s" + el.dataset.i; const arr = (S.p.ans[k] || []).slice(); arr.splice(Number(el.dataset.v), 1); S.p.ans[k] = arr; render(); },
+  play(el) {
+    const p = S.p; const key = el.dataset.v;
+    if (p.playing === key) { Speech.stop(); p.playing = null; render(); return; }
+    const t = TASK[p.taskId]; const d = p.set;
+    let lines;
+    if (key === "main") lines = d.lines;
+    else if (key.startsWith("u")) { const it = d.items[Number(key.slice(1))]; lines = [{ speaker: it.speaker, text: it.utterance }]; }
+    else if (key.startsWith("r")) lines = [{ speaker: "guide", text: d.sentences[Number(key.slice(1))] }];
+    else if (key.startsWith("q")) { const i = Number(key.slice(1)); lines = i === 0 ? [{ speaker: "interviewer", text: d.intro }, { speaker: "interviewer", text: d.questions[0] }] : [{ speaker: "interviewer", text: d.questions[i] }]; }
+    p.playing = key; render();
+    Speech.play(lines).then(() => {
+      if (S.p !== p) return;
+      p.played[key] = true; p.playing = null;
+      if (t.engine === "interview") { p.qRunning = true; p.qElapsed = 0; }
+      render();
+    }).catch((e) => {
+      if (S.p !== p) return;
+      p.playing = null;
+      if (e?.code !== "stopped" && e?.code !== "viewer_stopped") { p.played[key] = true; toast("音声を再生できませんでした。スクリプトを表示します。"); }
+      render();
+    });
+  },
+  "dict-start"(el) { if (!ENV.dict) return; Dict.start(el.dataset.v); },
+  "dict-stop"() { Dict.stop(); },
+  "rep-next"() { Speech.stop(); Dict.stop(); S.p.step++; render(); },
+  "int-next"() { Speech.stop(); Dict.stop(); S.p.step++; S.p.qRunning = false; S.p.qElapsed = 0; render(); },
+  "rev-open"(el) { S.review = { open: el.dataset.v, picked: null }; render(); },
+  "rev-pick"(el) { const m = S.mistakes.find((x) => x.id === S.review.open); S.review.picked = Number(el.dataset.v); if (m && S.review.picked === m.q.answer) { m.resolved = true; m.keepOpen = true; } persist(); render(); },
+  "rev-close"() { S.review = { open: null }; S.mistakes.forEach((m) => delete m.keepOpen); render(); },
+  "vocab-add"() { const w = (S.vw || "").trim(); if (!w) { toast("単語を入力してください"); return; } S.vocab.unshift({ word: w, meaning_ja: (S.vm || "").trim(), example: "" }); S.vw = ""; S.vm = ""; persist(); render(); toast("単語帳に追加しました"); },
+  "vocab-del"(el) { S.vocab.splice(Number(el.dataset.v), 1); persist(); render(); },
+  "g-step"(el) { const k = el.dataset.k; S.goals[k] = clamp(round05(S.goals[k] + Number(el.dataset.v)), 1, 6); persist(); render(); },
+  "g-num"(el) { const k = el.dataset.k; const min = k === "weeklySets" ? 1 : 30; S.goals[k] = Math.max(min, S.goals[k] + Number(el.dataset.v)); persist(); render(); },
+  reset() { S.attempts = seedAttempts(); S.mistakes = []; persist(); toast("学習データをサンプルに戻しました"); render(); },
+};
+document.addEventListener("click", (e) => {
+  const el = e.target.closest("[data-a]");
+  if (!el || el.disabled) return;
+  const fn = A[el.dataset.a];
+  if (fn) fn(el, e);
+});
+document.addEventListener("input", (e) => {
+  const el = e.target; const path = el.dataset?.bind; if (!path) return;
+  const parts = path.split(".");
+  let obj = parts[0] === "goals" ? S.goals : parts[0] === "ans" ? S.p.ans : parts[0] === "texts" ? (S.p.texts = S.p.texts || {}) : null;
+  if (obj) obj[parts[1]] = el.value; else if (parts[0] === "topic") S.p.topic = el.value; else S[parts[0]] = el.value;
+  if (parts[0] === "goals") persist();
+  if (path === "texts.main") {
+    const wc = document.getElementById("wc"); const n = wordCount(el.value);
+    if (wc) wc.textContent = n + " 語";
+    const b = document.getElementById("score-btn"); if (b) b.disabled = n < 20;
+  }
+  if (Dict.target && path === "texts." + Dict.target) Dict.base = el.value;
+});
+document.addEventListener("change", (e) => { if (e.target.dataset?.bind === "goals.examDate") render(); });
+
+render();
+</script>
