@@ -210,6 +210,24 @@ details.card summary { cursor: pointer; font-weight: 700; }
 .stepper { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
 .stepper button { width: 40px; height: 40px; border: 0; background: var(--surface-2); font-size: 18px; font-weight: 700; }
 .stepper span { min-width: 56px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.today { display: grid; gap: 12px; }
+.today .big-start { min-height: 56px; font-size: 17px; border-radius: 14px; }
+.ready-chip { justify-self: start; }
+.ctx { display: grid; gap: 8px; }
+.ctx .lbl { font-size: 12px; font-weight: 700; color: var(--muted); }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chips button { border: 1px solid var(--line); background: var(--surface); border-radius: 99px; padding: 6px 12px; font-size: 13px; font-weight: 700; color: var(--muted); min-height: 36px; }
+.chips button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+.week .d { display: grid; gap: 4px; justify-items: center; font-size: 11px; color: var(--muted); }
+.week .dot { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--line); display: grid; place-items: center; color: transparent; }
+.week .dot.on { background: var(--good); border-color: var(--good); color: var(--surface); }
+.week .dot.today { border-color: var(--ink); border-width: 2px; }
+.week .dot svg { width: 16px; height: 16px; }
+.resume { border-color: var(--warn); background: var(--warn-soft); }
+.done-mark { width: 44px; height: 44px; border-radius: 50%; background: var(--good); color: var(--surface); display: grid; place-items: center; flex: none; }
+.done-mark svg { width: 24px; height: 24px; }
+.linkish { background: none; border: 0; padding: 4px 0; color: var(--accent); font-weight: 700; font-size: 13px; justify-self: start; }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--tabbar) + 16px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 99px; font-size: 13px; font-weight: 700; z-index: 40; max-width: calc(100% - 32px); }
 </style>
 
@@ -485,8 +503,13 @@ const S = {
   practiceMode: store.get("practiceMode", false),
   p: { screen: "sections" },
   review: { open: null },
+  ctx: store.get("ctx", { time: "short", sound: "full" }),
+  askSetup: store.get("askSetup", false),
+  ready: store.get("ready", {}),           // 先読み済みの AI 問題（本番の items.status = 'ready'）
+  usedSample: store.get("usedSample", {}),
+  reminder: store.get("reminder", "21:00"),
 };
-const persist = () => { store.set("goals", S.goals); store.set("attempts", S.attempts); store.set("mistakes", S.mistakes); store.set("vocab", S.vocab); store.set("practiceMode", S.practiceMode); };
+const persist = () => { store.set("goals", S.goals); store.set("attempts", S.attempts); store.set("mistakes", S.mistakes); store.set("vocab", S.vocab); store.set("practiceMode", S.practiceMode); store.set("ctx", S.ctx); store.set("askSetup", S.askSetup); store.set("ready", S.ready); store.set("usedSample", S.usedSample); store.set("reminder", S.reminder); };
 
 /* ---------- 推定スコア（本番では lib/estimate.ts） ---------- */
 const round05 = (x) => Math.round(x * 2) / 2;
@@ -511,16 +534,31 @@ function taskRate(taskId) {
   if (!list.length) return null;
   return list.reduce((s, a) => s + (a.band != null ? a.band / 6 : a.correct / a.total), 0) / list.length;
 }
-function recommendation() {
+const CTX_TIME = { short: { ja: "3分", max: 3 }, mid: { ja: "10分", max: 7 }, long: { ja: "じっくり", max: 99 } };
+const CTX_SOUND = {
+  full: { ja: "声も出せる", ok: () => true },
+  listen: { ja: "聞くだけ", ok: (t) => t.section !== "speaking" },
+  silent: { ja: "音なし", ok: (t) => t.section === "reading" || t.section === "writing" },
+};
+const fitsCtx = (t) => t.mins <= CTX_TIME[S.ctx.time].max && CTX_SOUND[S.ctx.sound].ok(t);
+function autoDifficulty(section) {
+  const e = estimate(section);
+  return e == null ? "standard" : e < 3.5 ? "easy" : e < 4.75 ? "standard" : "hard";
+}
+function recommendation(filter = () => true, exclude = []) {
+  const pool = TASKS.filter((t) => filter(t) && !exclude.includes(t.id));
+  if (!pool.length) return null;
   let best = null;
   for (const k of SECTION_KEYS) {
+    if (!pool.some((t) => t.section === k)) continue;
     const e = estimate(k);
     const gap = e == null ? Infinity : (S.goals[k] ?? 0) - e;
     if (!best || gap > best.gap) best = { section: k, gap, est: e };
   }
-  const cands = TASKS.filter((t) => t.section === best.section).map((t) => ({ t, r: taskRate(t.id) ?? 0 })).sort((a, b) => a.r - b.r);
+  const cands = pool.filter((t) => t.section === best.section).map((t) => ({ t, r: taskRate(t.id) ?? 0 })).sort((a, b) => a.r - b.r);
   return { ...best, task: cands[0].t, rate: cands[0].r };
 }
+const todayCount = () => S.attempts.filter((a) => a.date >= today0().getTime()).length;
 function weekStats() {
   const d = today0(); const dow = (d.getDay() + 6) % 7; const monday = d.getTime() - dow * DAY;
   const list = S.attempts.filter((a) => a.date >= monday);
@@ -540,6 +578,8 @@ const ENV = { sample: null, tts: null, dict: null, ready: false };
   const use = (n) => (window.claude && typeof window.claude.use === "function" ? window.claude.use(n).catch(() => null) : Promise.resolve(null));
   const [sample, tts, dict] = await Promise.all([use("sample"), use("tts"), use("dictation")]);
   Object.assign(ENV, { sample, tts, dict, ready: true });
+  try { const perms = await use("permissions"); ENV.sampleGranted = sample && perms ? (await perms.state("sample")) === "granted" : false; } catch { ENV.sampleGranted = false; }
+  if (ENV.sampleGranted) prefetchDaily();
   if (dict) {
     dict.onPartial(({ text }) => Dict.partial(text));
     dict.onFinal(({ text }) => Dict.final(text));
@@ -654,12 +694,40 @@ function renderTabs() {
 }
 
 /* ---------- ホーム ---------- */
+const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>';
+function reasonText(rec) {
+  if (!rec) return "";
+  if (rec.est == null) return `${SECTIONS[rec.section].ja}の推定に使う結果がまだ少ないので、まずここから。`;
+  if (rec.gap > 0) return `${SECTIONS[rec.section].ja}が目標まであと ${rec.gap.toFixed(1)}。その中で一番伸ばしどころのタスクです。`;
+  return `目標達成中。${SECTIONS[rec.section].ja}で一番正答率が低いタスクで仕上げましょう。`;
+}
+function ctxChips() {
+  return `<div class="ctx">
+    <div class="row wrap" style="gap:8px"><span class="lbl">いま使える時間</span><div class="chips" role="group" aria-label="いま使える時間">${Object.entries(CTX_TIME).map(([k, v]) => `<button data-a="ctx" data-k="time" data-v="${k}" aria-pressed="${S.ctx.time === k}">${v.ja}</button>`).join("")}</div></div>
+    <div class="row wrap" style="gap:8px"><span class="lbl">いまの場所</span><div class="chips" role="group" aria-label="いまの場所">${Object.entries(CTX_SOUND).map(([k, v]) => `<button data-a="ctx" data-k="sound" data-v="${k}" aria-pressed="${S.ctx.sound === k}">${v.ja}</button>`).join("")}</div></div>
+  </div>`;
+}
+function weekStrip() {
+  const d0 = today0(); const dow = (d0.getDay() + 6) % 7; const monday = d0.getTime() - dow * DAY;
+  const days = new Set(S.attempts.map((a) => isoDate(new Date(a.date))));
+  const names = ["月", "火", "水", "木", "金", "土", "日"];
+  return `<div class="week">${names.map((n, i) => { const t = monday + i * DAY; const on = days.has(isoDate(new Date(t))); return `<div class="d"><span class="dot ${on ? "on" : ""} ${i === dow ? "today" : ""}" aria-label="${n}曜 ${on ? "学習済み" : "未学習"}">${CHECK}</span>${n}</div>`; }).join("")}</div>`;
+}
+function resumeCard() {
+  const r = S.inProgress; if (!r) return "";
+  const t = TASK[r.p.taskId]; const left = t.mins * 60 - r.p.elapsed;
+  return `<section class="card resume">
+    <div><h3>途中のセットがあります</h3><p class="small muted">${esc(t.en)}・残り ${fmtTime(left)}。中断したところから続けられます。</p></div>
+    <div class="grid2"><button class="btn primary" data-a="resume">続きから</button><button class="btn" data-a="discard">やめる</button></div>
+  </section>`;
+}
 function viewHome() {
   const g = S.goals;
   const days = Math.ceil((new Date(g.examDate + "T00:00:00") - today0()) / DAY);
-  const tot = estimateTotal();
-  const rec = recommendation();
+  const rec = recommendation(fitsCtx);
+  const done = todayCount();
   const wk = weekStats();
+  const tot = estimateTotal();
   const weak = TASKS.map((t) => ({ t, r: taskRate(t.id) })).filter((x) => x.r != null).sort((a, b) => a.r - b.r).slice(0, 3);
   const scoreRows = SECTION_KEYS.map((k) => {
     const e = estimate(k); const tg = g[k]; const gap = e == null ? null : e - tg;
@@ -669,55 +737,43 @@ function viewHome() {
       <span class="num small"><b>${bandStr(e)}</b> ${gap == null ? '<span class="muted">データ不足</span>' : gap >= 0 ? '<span class="gap-ok">達成</span>' : `<span class="gap-neg">${gap.toFixed(1)}</span>`}</span>
     </div>`;
   }).join("");
-  const real = S.attempts.filter((a) => !a.seed).length;
+  const readyNow = rec && S.ready[rec.task.id];
+  const todayCard = !rec
+    ? `<section class="card"><p class="small">この条件に合うタスクがありません。時間か場所を変えてください。</p></section>`
+    : done === 0
+    ? `<section class="card next-card today">
+        <h2 style="color:inherit;opacity:.85;margin:0">今日の1セット</h2>
+        <div><h3 style="font-size:20px">${esc(rec.task.en)}</h3><p class="small muted">${esc(rec.task.ja)}・${rec.task.mins}分</p></div>
+        <button class="btn block big-start" data-a="quick" data-v="${rec.task.id}">はじめる</button>
+        <p class="small muted">${esc(reasonText(rec))}${readyNow ? "　AI の新しい問題を準備済みです。" : ""}</p>
+      </section>`
+    : `<section class="card today">
+        <div class="row"><span class="done-mark">${CHECK}</span><div><h3>今日の分は完了</h3><p class="small muted">今日 ${done} セット・連続 ${streak()} 日。この調子です。</p></div></div>
+        <button class="btn block" data-a="quick" data-v="${rec.task.id}">もう1セットやる：${esc(rec.task.en)}（${rec.task.mins}分）</button>
+      </section>`;
   return `
-  ${real === 0 ? `<div class="notice"><b>サンプルデータを表示中</b>　6週間分の学習履歴の例です。演習を解くと、その結果がこの画面に反映されます。</div>` : ""}
+  ${resumeCard()}
+  ${todayCard}
+  <section class="card">${ctxChips()}<p class="small muted">状況に合わせて「今日の1セット」を選び直します。</p></section>
   <section class="card">
-    <div class="row between wrap">
-      <div><h2>受験日まで</h2><div class="hero-count"><b>${days}</b><span>日</span></div><p class="small muted">${esc(g.examDate.replaceAll("-", "/"))} 受験予定</p></div>
-      <div style="text-align:right"><h2>推定スコア（合計）</h2><div class="hero-count" style="justify-content:flex-end"><b>${bandStr(tot)}</b><span class="muted">/ 目標 ${bandStr(g.total)}</span></div><p class="small muted num">0–120 換算 目安 ${tot == null ? "—" : BAND_TO_120[tot]}</p></div>
-    </div>
+    <div class="row between"><h2 style="margin:0">今週</h2><span class="small num"><b>${wk.sets}</b> / ${g.weeklySets} セット・連続 <b>${streak()}</b> 日</span></div>
+    ${weekStrip()}
+    <div class="progress"><i style="width:${Math.min(100, (wk.sets / g.weeklySets) * 100)}%"></i></div>
   </section>
-
-  <section class="card next-card">
-    <h2 style="color:inherit;opacity:.85">次の1セット</h2>
-    <div><h3>${esc(rec.task.en)}</h3><p class="small muted">${rec.est == null ? `${esc(SECTIONS[rec.section].ja)} はまだ推定に必要な5回分の結果がありません。まずデータを集めましょう。` : rec.gap > 0 ? `${esc(SECTIONS[rec.section].ja)} が目標まで ${rec.gap.toFixed(1)} 足りません。その中で正答率が最も低いタスクです（直近 ${Math.round(rec.rate * 100)}%）。` : `全セクションで目標に届いています。${esc(SECTIONS[rec.section].ja)} の正答率が最も低いタスクで仕上げましょう。`}</p></div>
-    <button class="btn block" data-a="start-rec" data-v="${rec.task.id}">このセットを始める（${rec.task.mins}分）</button>
-  </section>
-
-  <section class="card">
-    <div class="row between"><h2 style="margin:0">セクション別　推定 / 目標</h2><span class="small muted">｜＝目標</span></div>
+  <details class="card">
+    <summary>スコアと目標　<span class="small muted num" style="font-weight:500">受験まで ${days}日・推定 ${bandStr(tot)} / 目標 ${bandStr(g.total)}</span></summary>
     <div class="score-rows">${scoreRows}</div>
     <div class="chart">${trendChart()}</div>
-    <p class="small muted">直近20回の結果から出した非公式の目安です。選択式は正答率を難易度で補正、記述・スピーキングは AI 採点の平均。5回未満は「データ不足」。</p>
-  </section>
-
-  <div class="grid2">
-    <section class="card">
-      <h2>今週の学習量</h2>
-      <p class="num"><b style="font-size:22px">${wk.minutes}</b> / ${g.weeklyMinutes} 分</p>
-      <div class="progress"><i style="width:${Math.min(100, (wk.minutes / g.weeklyMinutes) * 100)}%"></i></div>
-      <p class="num small">${wk.sets} / ${g.weeklySets} セット</p>
-      <div class="progress"><i style="width:${Math.min(100, (wk.sets / g.weeklySets) * 100)}%"></i></div>
-    </section>
-    <section class="card">
-      <h2>連続学習</h2>
-      <p class="num"><b style="font-size:22px">${streak()}</b> 日</p>
-      <p class="small muted">1日1セットで記録がつながります。</p>
-    </section>
-  </div>
-
-  <section class="card">
-    <h2>苦手なタスク</h2>
+    <p class="small muted">直近20回から出した非公式の目安です。0–120 換算の目安：${tot == null ? "—" : BAND_TO_120[tot]}。5回未満は「データ不足」。</p>
+    <h2 style="margin-top:6px">苦手なタスク</h2>
     <ul class="plain weak">${weak.map((w) => `<li><span>${esc(w.t.en)} <span class="small muted">${SECTIONS[w.t.section].letter}</span></span><span class="num chip ${w.r < 0.55 ? "bad" : "warn"}">${Math.round(w.r * 100)}%</span></li>`).join("")}</ul>
-  </section>
-
+  </details>
+  ${S.attempts.some((a) => !a.seed) ? "" : `<p class="small muted">登録も設定もいりません。表示中の履歴とスコアはサンプルで、解くと自分の結果に置き換わっていきます。</p>`}
   <section class="card flat">
     <h2>過去問について</h2>
-    <p class="small">ETS は本試験の問題を公開しておらず、公式練習問題にも著作権があるため、このアプリには収録しません。問題はすべて AI が作るオリジナルです。「公式サンプル準拠」をオンにすると、公式サンプルの文体・長さ・設問の型に寄せて作ります。</p>
+    <p class="small">ETS は本試験の問題を公開しておらず、公式練習問題にも著作権があるため収録しません。問題はすべて AI が作るオリジナルです。</p>
     <a class="small" style="color:var(--accent);font-weight:700" href="https://www.ets.org/toefl/test-takers/ibt/prepare/practice-tests.html" target="_blank" rel="noopener noreferrer">ETS 公式の無料練習テスト ↗</a>
   </section>
-
   ${aboutCard()}`;
 }
 
@@ -782,8 +838,9 @@ function viewPractice() {
     return `<h1>${SECTIONS[p.section].en}</h1>
     <div class="stack">${TASKS.filter((t) => t.section === p.section).map((t) => {
       const r = taskRate(t.id);
-      return `<button class="list-btn" data-a="p-task" data-v="${t.id}"><span class="t"><b>${esc(t.en)}</b><span class="small muted">${esc(t.ja)}・目安 ${t.mins}分</span></span>${r == null ? "" : `<span class="chip num ${r < 0.55 ? "bad" : r < 0.7 ? "warn" : "good"}">${Math.round(r * 100)}%</span>`}<span class="chev">›</span></button>`;
-    }).join("")}</div>`;
+      return `<button class="list-btn" data-a="p-task" data-v="${t.id}"><span class="t"><b>${esc(t.en)}</b><span class="small muted">${esc(t.ja)}・目安 ${t.mins}分${S.ready[t.id] ? "・<span style='color:var(--good);font-weight:700'>準備済み</span>" : ""}</span></span>${r == null ? "" : `<span class="chip num ${r < 0.55 ? "bad" : r < 0.7 ? "warn" : "good"}">${Math.round(r * 100)}%</span>`}<span class="chev">›</span></button>`;
+    }).join("")}</div>
+    <section class="card"><div class="switch"><div><b>始める前に難易度・トピックを選ぶ</b><p class="small muted">オフのときは、推定スコアに合う難易度とランダムなトピックですぐ始まります。</p></div><button class="toggle" role="switch" aria-checked="${S.askSetup}" aria-label="始める前に難易度・トピックを選ぶ" data-a="toggle-ask"></button></div></section>`;
   }
   if (p.screen === "setup") return viewSetup();
   if (p.screen === "loading") return viewLoading();
@@ -818,7 +875,8 @@ function viewLoading() {
     <div class="skeleton" style="width:60%"></div><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton" style="width:80%"></div>
     <div class="skeleton" style="height:44px;margin-top:8px"></div><div class="skeleton" style="height:44px"></div>
   </section>
-  <button class="btn block" data-a="p-cancel">中止する</button>`;
+  <button class="btn primary block" data-a="p-sample-now">待たずにサンプルで始める</button>
+  <button class="btn ghost block" data-a="p-cancel">中止する</button>`;
 }
 
 function playbar() {
@@ -844,17 +902,21 @@ function viewPlay() {
 
 function summaryCard() {
   const p = S.p; const s = p.summary;
+  const next = recommendation(fitsCtx, [p.taskId]);
+  const n = todayCount();
   return `<section class="card" style="border-color:var(--accent)">
     <div class="row between wrap">
       <div class="big-score">${s.band != null ? `<b>${s.band.toFixed(1)}</b><span class="muted">band</span>` : `<b>${s.correct}/${s.total}</b><span class="muted">正解</span>`}</div>
       <span class="small muted num">所要 ${fmtTime(p.elapsed)}</span>
     </div>
     ${s.note ? `<p class="small muted">${esc(s.note)}</p>` : ""}
+    <div class="row"><span class="done-mark" style="width:32px;height:32px">${CHECK}</span><p class="small"><b>${n === 1 ? "今日の分は完了です。" : `今日 ${n} セット目。`}</b>連続 ${streak()} 日。</p></div>
+    ${weekStrip()}
+    ${next ? `<button class="btn primary block" data-a="quick" data-v="${next.task.id}">続けて1セット：${esc(next.task.en)}（${next.task.mins}分）</button>` : ""}
     <div class="grid2">
-      <button class="btn primary" data-a="p-again">もう1セット</button>
-      <button class="btn" data-a="p-home">演習トップへ</button>
+      <button class="btn" data-a="p-done">今日はここまで</button>
+      <button class="btn ghost" data-a="quick" data-v="${p.taskId}">同じタスクをもう1回</button>
     </div>
-    <p class="small muted">結果は保存され、ホームの推定スコアと学習量に反映されました。</p>
   </section>`;
 }
 
@@ -1101,6 +1163,11 @@ function viewGoals() {
   const g = S.goals;
   const stepper = (key, label) => `<span>${label}${key === "total" ? "" : ""}</span><span class="stepper"><button data-a="g-step" data-k="${key}" data-v="-0.5" aria-label="${label}を下げる">−</button><span class="num">${g[key].toFixed(1)}</span><button data-a="g-step" data-k="${key}" data-v="0.5" aria-label="${label}を上げる">＋</button></span>`;
   return `<h1>目標</h1>
+  <p class="small muted">設定しなくても使えます。入れておくと「今日の1セット」が目標に合わせて選ばれます。</p>
+  <section class="card">
+    <div class="field"><label for="remind">毎日のリマインド</label><input class="input" type="time" id="remind" data-bind="reminder" value="${esc(S.reminder)}"></div>
+    <p class="small muted">本番では、この時刻にまだ1セットもやっていなければスマホに通知します（ホーム画面に追加した PWA のプッシュ通知）。このデモでは時刻の設定だけです。</p>
+  </section>
   <section class="card">
     <h2>目標スコア（1〜6 band）</h2>
     <div class="goal-grid">
@@ -1135,10 +1202,11 @@ function planHint() {
 let tick = null;
 function afterRender() {
   clearInterval(tick);
+  saveProgress();
   const p = S.p;
   if (S.tab === "practice" && p.screen === "play" && !p.done) {
     tick = setInterval(() => {
-      if (!p.paused) p.elapsed += 1;
+      if (!p.paused) { p.elapsed += 1; if (p.elapsed % 5 === 0) saveProgress(); }
       const t = TASK[p.taskId]; const el = document.getElementById("timer");
       if (el) { const r = t.mins * 60 - p.elapsed; el.textContent = fmtTime(r); el.classList.toggle("over", r < 0); }
       if (p.qRunning) { p.qElapsed = (p.qElapsed || 0) + 1; const q = document.getElementById("qtimer"); if (q) { q.textContent = fmtTime(45 - p.qElapsed); q.classList.toggle("over", p.qElapsed > 45); } }
@@ -1162,38 +1230,99 @@ function startPlay(set, source, notice) {
   }
   window.scrollTo(0, 0);
   render();
+  setTimeout(() => prefetch(p.taskId), 1500);
+}
+
+function pickTopic() {
+  const recent = S.attempts.filter((a) => !a.seed && a.topic).slice(-5).map((a) => a.topic);
+  const pool = TOPICS.filter((x) => !recent.includes(x));
+  return pool[Math.floor(Math.random() * pool.length)] || TOPICS[0];
+}
+async function generateSet(taskId, difficulty, topic, official, signal) {
+  const t = TASK[taskId];
+  const seed = Math.random().toString(36).slice(2, 8);
+  const prompt = `You are an expert TOEFL iBT item writer for the updated (2026) format. Create ONE wholly original practice set for the task "${t.en}" (${t.section} section). Difficulty: ${DIFF[difficulty].prompt}. Topic: ${topic}. Variation seed: ${seed}. Explanations must be in Japanese. Vary which option letter is correct. Return ONLY JSON matching the schema.${official ? " Model style, length, question stems and distractor logic closely on ETS's officially published TOEFL iBT sample questions, but never reproduce any real item." : ""}\n\nSchema:\n${SCHEMA[t.id]}`;
+  let lastErr = null;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const data = await ENV.sample.json(prompt, { signal, modelTier: "default", cache: false });
+      if (VALIDATE[t.id](data)) return data;
+      lastErr = { code: "invalid_shape" };
+    } catch (e) {
+      if (e?.code === "cancelled" || signal?.aborted) throw { code: "cancelled" };
+      lastErr = e;
+      if (["not_granted", "rate_limited", "sampling_disabled", "capability_disabled"].includes(e?.code)) break;
+    }
+  }
+  throw lastErr || { code: "invalid_shape" };
+}
+
+/* 先読み: 解いている間に次の問題を作っておく（許可済みのときだけ。1件ずつ） */
+const inflight = new Set();
+function prefetch(taskId) {
+  if (!ENV.sample || !ENV.sampleGranted || S.ready[taskId] || inflight.has(taskId) || inflight.size >= 1) return;
+  const t = TASK[taskId]; const difficulty = autoDifficulty(t.section); const topic = pickTopic();
+  inflight.add(taskId);
+  generateSet(taskId, difficulty, topic, false).then((set) => {
+    S.ready[taskId] = { set, difficulty, topic, at: Date.now() }; persist();
+    if (S.tab === "home" || (S.tab === "practice" && S.p.screen === "tasks")) render();
+  }).catch(() => {}).finally(() => { inflight.delete(taskId); });
+}
+function prefetchDaily(exclude = []) {
+  const rec = recommendation(fitsCtx, exclude);
+  if (rec) prefetch(rec.task.id);
+}
+
+/* すぐ始める: 準備済み → それを出す / 初回 → 内蔵サンプル / それ以外 → 生成（待たずにサンプルも選べる） */
+function quickStart(taskId) {
+  const t = TASK[taskId];
+  Speech.stop(); Dict.stop(); clearProgress();
+  S.tab = "practice";
+  S.p = { screen: "setup", section: t.section, taskId, difficulty: autoDifficulty(t.section), topic: "", official: false };
+  const r = S.ready[taskId];
+  if (r) {
+    delete S.ready[taskId]; persist();
+    S.p.difficulty = r.difficulty; S.p.topicSaved = r.topic;
+    startPlay(r.set, "ai");
+    return;
+  }
+  if (ENV.sample && S.usedSample[taskId]) { generate(); return; }
+  S.usedSample[taskId] = true; persist();
+  S.p.topicSaved = null;
+  startPlay(SAMPLES[taskId], "sample", ENV.sample ? "<b>1回目は内蔵サンプルですぐ始めます。</b>2回目からは AI が作った新しい問題になります。" : "");
 }
 
 let genCtl = null;
 async function generate() {
   const p = S.p; const t = TASK[p.taskId];
-  const recent = S.attempts.filter((a) => !a.seed && a.topic).slice(-5).map((a) => a.topic);
-  const pool = TOPICS.filter((x) => !recent.includes(x));
-  const topic = p.topic.trim() || pool[Math.floor(Math.random() * pool.length)] || TOPICS[0];
-  const seed = Math.random().toString(36).slice(2, 8);
+  const topic = p.topic.trim() || pickTopic();
   Object.assign(p, { screen: "loading", loadStart: Date.now(), topicUsed: topic });
   render();
-  const prompt = `You are an expert TOEFL iBT item writer for the updated (2026) format. Create ONE wholly original practice set for the task "${t.en}" (${t.section} section). Difficulty: ${DIFF[p.difficulty].prompt}. Topic: ${topic}. Variation seed: ${seed}. Explanations must be in Japanese. Vary which option letter is correct. Return ONLY JSON matching the schema.${p.official ? " Model style, length, question stems and distractor logic closely on ETS's officially published TOEFL iBT sample questions, but never reproduce any real item." : ""}\n\nSchema:\n${SCHEMA[t.id]}`;
   genCtl = new AbortController();
-  const ctl = genCtl;
-  let lastErr = null;
-  for (let attempt = 0; attempt < 2; attempt++) {
-    try {
-      const data = await ENV.sample.json(prompt, { signal: ctl.signal, modelTier: "default", cache: false });
-      if (ctl.signal.aborted || S.p !== p) return;
-      if (VALIDATE[t.id](data)) { p.topicSaved = topic; startPlay(data, "ai"); return; }
-      lastErr = { code: "invalid_shape" };
-    } catch (e) {
-      if (e?.code === "cancelled" || ctl.signal.aborted) return;
-      lastErr = e;
-      if (["not_granted", "rate_limited", "sampling_disabled", "capability_disabled"].includes(e?.code)) break;
-    }
+  try {
+    const data = await generateSet(t.id, p.difficulty, topic, p.official, genCtl.signal);
+    ENV.sampleGranted = true;
+    if (S.p !== p || p.screen !== "loading") return;
+    p.topicSaved = topic; startPlay(data, "ai");
+  } catch (e) {
+    if (e?.code === "cancelled" || S.p !== p || p.screen !== "loading") return;
+    const why = e?.code === "not_granted" ? "AI の利用が許可されませんでした" : e?.code === "rate_limited" ? "AI の利用が混み合っています" : "AI が作った問題の形式が正しくありませんでした";
+    p.topicSaved = null;
+    startPlay(SAMPLES[t.id], "sample", `<b>${why}。</b>内蔵サンプルに切り替えました。`);
   }
-  if (S.p !== p) return;
-  const why = lastErr?.code === "not_granted" ? "AI の利用が許可されませんでした" : lastErr?.code === "rate_limited" ? "AI の利用が混み合っています" : "AI が作った問題の形式が正しくありませんでした";
-  p.topicSaved = null;
-  startPlay(SAMPLES[t.id], "sample", `<b>${why}。</b>内蔵サンプルに切り替えました。`);
 }
+
+/* 途中保存: 中断しても続きから再開できる（この端末のみ） */
+S.inProgress = (() => { const r = store.get("inProgress", null); return r && Date.now() - r.at < 2 * DAY ? r : null; })();
+function saveProgress() {
+  const p = S.p;
+  if (S.tab === "practice" && p.screen === "play" && !p.done && !p.scoring) {
+    const copy = { ...p, playing: null, paused: false, qRunning: false };
+    S.inProgress = { p: copy, at: Date.now() };
+    store.set("inProgress", S.inProgress);
+  }
+}
+function clearProgress() { S.inProgress = null; store.set("inProgress", null); }
 
 const DEMO_FEEDBACK = {
   writing: { band: 4.0, summary_ja: "要件にはおおむね触れられていますが、理由の説明が短く、文のつながりが単調です。具体例を1つ加え、接続表現で論理を見せるとさらに上がります。", strengths_ja: ["3つの要件すべてに触れている", "メールとして自然な書き出しと結びになっている"], improvements_ja: ["理由をもう一文、具体的に説明する", "because / so だけでなく however, as a result なども使う", "同じ単語の繰り返しを減らす"], corrections: [{ original: "I can't go because I have a work.", better: "I can't make it because I have to work that day.", why_ja: "work は「仕事」の意味では不可算。make it（都合がつく）も自然です。" }], model_answer: "Dear Jordan,\n\nThank you for organizing this Saturday's hike. Unfortunately, I won't be able to join because I have a part-time shift that I can't change. I was really looking forward to it.\n\nWould it be possible for me to join the next trip later this month? If you share the schedule, I'll make sure to keep that day free.\n\nIn the meantime, I'd be happy to help the club in other ways. For example, I could design a poster for the spring recruitment event or help plan future routes.\n\nBest regards,\nAlex" },
@@ -1231,6 +1360,8 @@ function finish(result) {
   const p = S.p; const t = TASK[p.taskId];
   p.done = true; p.summary = result;
   Speech.stop();
+  clearProgress();
+  setTimeout(() => { prefetch(p.taskId); prefetchDaily([p.taskId]); }, 0);
   const attempt = { id: "a" + Date.now(), task: t.id, section: t.section, difficulty: p.difficulty, date: Date.now(), duration: p.elapsed, topic: p.topicSaved || null };
   if (result.band != null) attempt.band = result.band; else { attempt.correct = result.correct; attempt.total = result.total; }
   S.attempts.push(attempt);
@@ -1268,16 +1399,23 @@ function grade() {
 
 /* ---------- イベント ---------- */
 const A = {
-  tab(el) { Speech.stop(); Dict.stop(); S.tab = el.dataset.v; window.scrollTo(0, 0); render(); },
-  "start-rec"(el) { newPractice(el.dataset.v); S.tab = "practice"; window.scrollTo(0, 0); render(); },
+  tab(el) { Speech.stop(); Dict.stop(); saveProgress(); if (S.p.screen === "play" && !S.p.done) S.p = { screen: "sections" }; S.tab = el.dataset.v; window.scrollTo(0, 0); render(); },
+  quick(el) { quickStart(el.dataset.v); },
+  ctx(el) { S.ctx[el.dataset.k] = el.dataset.v; persist(); render(); if (ENV.sampleGranted) prefetchDaily(); },
+  resume() { const r = S.inProgress; if (!r) return; S.tab = "practice"; S.p = { ...r.p, playing: null, paused: false }; window.scrollTo(0, 0); render(); },
+  discard() { clearProgress(); render(); },
+  "toggle-ask"() { S.askSetup = !S.askSetup; persist(); render(); },
+  "p-sample-now"() { genCtl?.abort(); S.p.topicSaved = null; startPlay(SAMPLES[S.p.taskId], "sample"); },
+  "p-done"() { S.p = { screen: "sections" }; S.tab = "home"; window.scrollTo(0, 0); render(); },
   "toggle-practice"() { S.practiceMode = !S.practiceMode; persist(); render(); },
   "p-section"(el) { S.p = { screen: "tasks", section: el.dataset.v }; render(); },
-  "p-task"(el) { newPractice(el.dataset.v); render(); },
+  "p-task"(el) { if (S.askSetup) { newPractice(el.dataset.v); S.p.difficulty = autoDifficulty(TASK[el.dataset.v].section); render(); } else quickStart(el.dataset.v); },
   "p-back"() {
     const p = S.p; Speech.stop(); Dict.stop(); genCtl?.abort(); scoreCtl?.abort();
     if (p.screen === "tasks") S.p = { screen: "sections" };
     else if (p.screen === "setup") S.p = { screen: "tasks", section: p.section };
-    else { p.screen = "setup"; }
+    else if (p.screen === "play" && !p.done) { saveProgress(); S.p = { screen: "tasks", section: p.section }; toast("途中まで保存しました。ホームから続きを再開できます。"); }
+    else S.p = { screen: "tasks", section: p.section };
     render();
   },
   "p-diff"(el) { S.p.difficulty = el.dataset.v; render(); },
@@ -1340,6 +1478,7 @@ document.addEventListener("input", (e) => {
   const parts = path.split(".");
   let obj = parts[0] === "goals" ? S.goals : parts[0] === "ans" ? S.p.ans : parts[0] === "texts" ? (S.p.texts = S.p.texts || {}) : null;
   if (obj) obj[parts[1]] = el.value; else if (parts[0] === "topic") S.p.topic = el.value; else S[parts[0]] = el.value;
+  if (parts[0] === "reminder") persist();
   if (parts[0] === "goals") persist();
   if (path === "texts.main") {
     const wc = document.getElementById("wc"); const n = wordCount(el.value);
