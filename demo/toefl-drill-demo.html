@@ -228,6 +228,23 @@ details.card summary { cursor: pointer; font-weight: 700; }
 .done-mark { width: 44px; height: 44px; border-radius: 50%; background: var(--good); color: var(--surface); display: grid; place-items: center; flex: none; }
 .done-mark svg { width: 24px; height: 24px; }
 .linkish { background: none; border: 0; padding: 4px 0; color: var(--accent); font-weight: 700; font-size: 13px; justify-self: start; }
+.steps { display: flex; align-items: center; gap: 6px; }
+.steps i { flex: 1; height: 4px; border-radius: 99px; background: var(--line); }
+.steps i.on { background: var(--accent); }
+.steps i.ok { background: var(--good); }
+.steps i.ng { background: var(--bad); }
+.steps span { font-size: 12px; font-weight: 700; color: var(--muted); margin-left: 4px; font-variant-numeric: tabular-nums; }
+.size-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.size-grid button { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 8px 2px; display: grid; gap: 2px; justify-items: center; font-weight: 700; font-size: 14px; color: var(--muted); }
+.size-grid button small { font-weight: 500; font-size: 11px; }
+.size-grid button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.size-scale { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); padding: 0 4px; }
+.flash { display: grid; gap: 12px; justify-items: center; text-align: center; padding: 22px 12px; }
+.flash .w { font-family: var(--font-text); font-size: 32px; font-weight: 600; line-height: 1.2; overflow-wrap: anywhere; }
+.flash .ex { font-family: var(--font-text); font-size: 16px; color: var(--muted); }
+.flash .m { font-size: 18px; font-weight: 700; }
+.x-mark { width: 44px; height: 44px; border-radius: 50%; background: var(--bad); color: var(--surface); display: grid; place-items: center; flex: none; font-weight: 700; font-size: 20px; }
+.passage-box { max-height: 40vh; overflow-y: auto; padding-right: 6px; border-bottom: 1px solid var(--line); }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--tabbar) + 16px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 99px; font-size: 13px; font-weight: 700; z-index: 40; max-width: calc(100% - 32px); }
 </style>
 
@@ -277,6 +294,7 @@ const TASKS = [
   { id: "interview", section: "speaking", en: "Take an Interview", ja: "4つの質問に各45秒で答える", mins: 4, engine: "interview" },
 ];
 const TASK = Object.fromEntries(TASKS.map((t) => [t.id, t]));
+TASK.vocab = { id: "vocab", section: "vocab", en: "単語カード", ja: "5枚・覚えているか確かめる", mins: 1, engine: "vocab" };
 const DIFF = {
   easy: { ja: "易", sub: "band 3〜4", prompt: "easy (TOEFL band 3-4, CEFR B1)", adj: -0.5 },
   standard: { ja: "標準", sub: "band 4〜5", prompt: "standard (TOEFL band 4-5, CEFR B2)", adj: 0 },
@@ -414,6 +432,33 @@ const SAMPLES = {
   },
 };
 
+/* ---------- 単語カード（頻出アカデミック語。本番では AI 生成・解説から自動追加） ---------- */
+const VOCAB_DECK = [
+  ["abundant", "豊富な", "Water was abundant in the valley."], ["adapt", "適応する", "Some species adapt quickly to new climates."],
+  ["allocate", "割り当てる", "The city allocated funds for new bike lanes."], ["ambiguous", "あいまいな", "The results of the study were ambiguous."],
+  ["anticipate", "予想する", "Researchers did not anticipate such a large effect."], ["arbitrary", "恣意的な", "The boundary between the regions is arbitrary."],
+  ["coincide", "同時に起こる", "The festival coincided with the harvest."], ["compelling", "説得力のある", "She presented compelling evidence."],
+  ["consecutive", "連続した", "It rained for five consecutive days."], ["constrain", "制約する", "Limited water constrains plant growth."],
+  ["contemporary", "同時代の／現代の", "Contemporary artists often use digital tools."], ["deplete", "使い果たす", "Overfishing can deplete fish populations."],
+  ["deteriorate", "悪化する", "The old bridge began to deteriorate."], ["diminish", "減少する", "The noise diminished as we walked away."],
+  ["disperse", "散らばる／分散させる", "Wind helps disperse the seeds."], ["dominant", "優勢な", "Grasses are the dominant plants here."],
+  ["emerge", "現れる", "New questions emerged from the data."], ["enhance", "高める", "Practice can enhance memory."],
+  ["erode", "浸食する", "Waves slowly erode the cliffs."], ["exceed", "超える", "Demand exceeded the supply."],
+  ["feasible", "実現可能な", "The plan is technically feasible."], ["fluctuate", "変動する", "Prices fluctuate with the seasons."],
+  ["hypothesis", "仮説", "The experiment tested a new hypothesis."], ["inevitable", "避けられない", "Some delay was inevitable."],
+  ["inhabit", "住む", "Few animals inhabit the desert."], ["mitigate", "和らげる", "Trees can mitigate the effects of heat."],
+  ["notion", "考え", "The notion of time differs across cultures."], ["prevalent", "広く見られる", "The habit is prevalent among students."],
+  ["sustain", "維持する", "The soil cannot sustain crops for long."], ["undergo", "経験する／受ける", "The building will undergo repairs."],
+].map(([word, meaning_ja, example]) => ({ word, meaning_ja, example }));
+
+const SIZES = {
+  word: { ja: "単語", sub: "約1分", next: "sentence" },
+  sentence: { ja: "1文", sub: "約30秒", next: "question" },
+  question: { ja: "1問", sub: "約2分", next: "set" },
+  set: { ja: "1セット", sub: "3〜10分", next: null },
+};
+const SIZE_TASKS = { sentence: ["choose", "build", "repeat", "words"], question: ["daily", "announcement", "conversation", "academic", "talk"] };
+
 /* ---------- AI 用スキーマ（SPEC.md 5章） ---------- */
 const MCQ_SCHEMA = '{"q": string, "options": [4 strings], "answer": 0-3, "explanation_ja": string}';
 const SCHEMA = {
@@ -503,13 +548,15 @@ const S = {
   practiceMode: store.get("practiceMode", false),
   p: { screen: "sections" },
   review: { open: null },
-  ctx: store.get("ctx", { time: "short", sound: "full" }),
+  ctx: (() => { const c = store.get("ctx", null) || {}; return { size: c.size && SIZES[c.size] ? c.size : "sentence", sound: c.sound || "full" }; })(),
+  pools: store.get("pools", {}),          // 1文・1問用に切り分けた問題の在庫
+  vbox: store.get("vbox", {}),            // 単語カードの復習間隔（簡易ライトナー方式）
   askSetup: store.get("askSetup", false),
   ready: store.get("ready", {}),           // 先読み済みの AI 問題（本番の items.status = 'ready'）
   usedSample: store.get("usedSample", {}),
   reminder: store.get("reminder", "21:00"),
 };
-const persist = () => { store.set("goals", S.goals); store.set("attempts", S.attempts); store.set("mistakes", S.mistakes); store.set("vocab", S.vocab); store.set("practiceMode", S.practiceMode); store.set("ctx", S.ctx); store.set("askSetup", S.askSetup); store.set("ready", S.ready); store.set("usedSample", S.usedSample); store.set("reminder", S.reminder); };
+const persist = () => { store.set("goals", S.goals); store.set("attempts", S.attempts); store.set("mistakes", S.mistakes); store.set("vocab", S.vocab); store.set("practiceMode", S.practiceMode); store.set("ctx", S.ctx); store.set("askSetup", S.askSetup); store.set("ready", S.ready); store.set("usedSample", S.usedSample); store.set("reminder", S.reminder); store.set("pools", S.pools); store.set("vbox", S.vbox); };
 
 /* ---------- 推定スコア（本番では lib/estimate.ts） ---------- */
 const round05 = (x) => Math.round(x * 2) / 2;
@@ -534,13 +581,19 @@ function taskRate(taskId) {
   if (!list.length) return null;
   return list.reduce((s, a) => s + (a.band != null ? a.band / 6 : a.correct / a.total), 0) / list.length;
 }
-const CTX_TIME = { short: { ja: "3分", max: 3 }, mid: { ja: "10分", max: 7 }, long: { ja: "じっくり", max: 99 } };
 const CTX_SOUND = {
   full: { ja: "声も出せる", ok: () => true },
   listen: { ja: "聞くだけ", ok: (t) => t.section !== "speaking" },
   silent: { ja: "音なし", ok: (t) => t.section === "reading" || t.section === "writing" },
 };
-const fitsCtx = (t) => t.mins <= CTX_TIME[S.ctx.time].max && CTX_SOUND[S.ctx.sound].ok(t);
+const fitsCtx = (t) => CTX_SOUND[S.ctx.sound].ok(t);
+/* サイズと場所から「次の1つ」を決める */
+function pickNext(size, exclude = []) {
+  if (size === "word") return { task: TASK.vocab, section: "vocab", est: 0, gap: 0, rate: 0 };
+  const allow = size === "set" ? null : SIZE_TASKS[size];
+  const filt = (t) => fitsCtx(t) && (!allow || allow.includes(t.id));
+  return recommendation(filt, exclude) || recommendation(filt) ;
+}
 function autoDifficulty(section) {
   const e = estimate(section);
   return e == null ? "standard" : e < 3.5 ? "easy" : e < 4.75 ? "standard" : "hard";
@@ -603,7 +656,7 @@ const Speech = {
     }
     return (l) => ({ idx: map[String(l.speaker || "x").toLowerCase()], tts: tts[map[String(l.speaker || "x").toLowerCase()]] });
   },
-  available() { return !!ENV.tts || "speechSynthesis" in window; },
+  available() { return !!ENV.tts || !!window.speechSynthesis; },
   async play(lines) {
     const vf = this.voicesFor(lines);
     this.speaking = true;
@@ -685,7 +738,7 @@ function render() {
 function renderTop() {
   const inPlay = S.tab === "practice" && S.p.screen !== "sections";
   $("#topbar").innerHTML = inPlay
-    ? `<button class="back" data-a="p-back">‹ 戻る</button><span class="small muted">${esc(SECTIONS[S.p.section]?.ja || "")}</span><span class="demo-pill">DEMO</span>`
+    ? `<button class="back" data-a="p-back">‹ 戻る</button><span class="small muted">${esc(SECTIONS[S.p.section]?.ja || (S.p.section === "vocab" ? "単語" : ""))}</span><span class="demo-pill">DEMO</span>`
     : `<div class="brand"><span class="brand-mark">T</span>reiro TOEFL Drill</div><span class="demo-pill">DEMO</span>`;
 }
 function renderTabs() {
@@ -703,9 +756,17 @@ function reasonText(rec) {
 }
 function ctxChips() {
   return `<div class="ctx">
-    <div class="row wrap" style="gap:8px"><span class="lbl">いま使える時間</span><div class="chips" role="group" aria-label="いま使える時間">${Object.entries(CTX_TIME).map(([k, v]) => `<button data-a="ctx" data-k="time" data-v="${k}" aria-pressed="${S.ctx.time === k}">${v.ja}</button>`).join("")}</div></div>
-    <div class="row wrap" style="gap:8px"><span class="lbl">いまの場所</span><div class="chips" role="group" aria-label="いまの場所">${Object.entries(CTX_SOUND).map(([k, v]) => `<button data-a="ctx" data-k="sound" data-v="${k}" aria-pressed="${S.ctx.sound === k}">${v.ja}</button>`).join("")}</div></div>
+    <span class="lbl">サイズ</span>
+    <div class="size-grid" role="group" aria-label="サイズ">${Object.entries(SIZES).map(([k, v]) => `<button data-a="ctx" data-k="size" data-v="${k}" aria-pressed="${S.ctx.size === k}">${v.ja}<small>${v.sub}</small></button>`).join("")}</div>
+    <div class="size-scale"><span>← 単語の暗記</span><span>本番に近い →</span></div>
+    <div class="row wrap" style="gap:8px;margin-top:4px"><span class="lbl">いまの場所</span><div class="chips" role="group" aria-label="いまの場所">${Object.entries(CTX_SOUND).map(([k, v]) => `<button data-a="ctx" data-k="sound" data-v="${k}" aria-pressed="${S.ctx.sound === k}">${v.ja}</button>`).join("")}</div></div>
   </div>`;
+}
+function nextLabel(size, rec) {
+  if (size === "word") return { title: "単語カード 5枚", sub: "復習のタイミングが来た単語から出します・約1分" };
+  if (size === "sentence") return { title: rec.task.en, sub: "1文だけ・約30秒" };
+  if (size === "question") return { title: rec.task.en, sub: "1問だけ・約2分" };
+  return { title: rec.task.en, sub: `${rec.task.ja}・${rec.task.mins}分` };
 }
 function weekStrip() {
   const d0 = today0(); const dow = (d0.getDay() + 6) % 7; const monday = d0.getTime() - dow * DAY;
@@ -724,7 +785,9 @@ function resumeCard() {
 function viewHome() {
   const g = S.goals;
   const days = Math.ceil((new Date(g.examDate + "T00:00:00") - today0()) / DAY);
-  const rec = recommendation(fitsCtx);
+  const size = S.ctx.size;
+  const rec = pickNext(size);
+  const lab = rec ? nextLabel(size, rec) : null;
   const done = todayCount();
   const wk = weekStats();
   const tot = estimateTotal();
@@ -737,26 +800,26 @@ function viewHome() {
       <span class="num small"><b>${bandStr(e)}</b> ${gap == null ? '<span class="muted">データ不足</span>' : gap >= 0 ? '<span class="gap-ok">達成</span>' : `<span class="gap-neg">${gap.toFixed(1)}</span>`}</span>
     </div>`;
   }).join("");
-  const readyNow = rec && S.ready[rec.task.id];
+  const readyNow = rec && size !== "word" && S.ready[rec.task.id];
   const todayCard = !rec
     ? `<section class="card"><p class="small">この条件に合うタスクがありません。時間か場所を変えてください。</p></section>`
     : done === 0
     ? `<section class="card next-card today">
-        <h2 style="color:inherit;opacity:.85;margin:0">今日の1セット</h2>
-        <div><h3 style="font-size:20px">${esc(rec.task.en)}</h3><p class="small muted">${esc(rec.task.ja)}・${rec.task.mins}分</p></div>
-        <button class="btn block big-start" data-a="quick" data-v="${rec.task.id}">はじめる</button>
-        <p class="small muted">${esc(reasonText(rec))}${readyNow ? "　AI の新しい問題を準備済みです。" : ""}</p>
+        <h2 style="color:inherit;opacity:.85;margin:0">今日の${SIZES[size].ja}</h2>
+        <div><h3 style="font-size:20px">${esc(lab.title)}</h3><p class="small muted">${esc(lab.sub)}</p></div>
+        <button class="btn block big-start" data-a="go" data-size="${size}" data-v="${rec.task.id}">はじめる</button>
+        <p class="small muted">${size === "word" ? "毎日少しずつが一番効きます。" : esc(reasonText(rec))}${readyNow ? "　AI の新しい問題を準備済みです。" : ""}</p>
       </section>`
     : `<section class="card today">
-        <div class="row"><span class="done-mark">${CHECK}</span><div><h3>今日の分は完了</h3><p class="small muted">今日 ${done} セット・連続 ${streak()} 日。この調子です。</p></div></div>
-        <button class="btn block" data-a="quick" data-v="${rec.task.id}">もう1セットやる：${esc(rec.task.en)}（${rec.task.mins}分）</button>
+        <div class="row"><span class="done-mark">${CHECK}</span><div><h3>今日の分は完了</h3><p class="small muted">今日 ${done} 回・連続 ${streak()} 日。この調子です。</p></div></div>
+        <button class="btn block" data-a="go" data-size="${size}" data-v="${rec.task.id}">もう${SIZES[size].ja}やる：${esc(lab.title)}</button>
       </section>`;
   return `
   ${resumeCard()}
   ${todayCard}
-  <section class="card">${ctxChips()}<p class="small muted">状況に合わせて「今日の1セット」を選び直します。</p></section>
+  <section class="card">${ctxChips()}<p class="small muted">どのサイズでも1回やれば「今日の分」は完了です。</p></section>
   <section class="card">
-    <div class="row between"><h2 style="margin:0">今週</h2><span class="small num"><b>${wk.sets}</b> / ${g.weeklySets} セット・連続 <b>${streak()}</b> 日</span></div>
+    <div class="row between"><h2 style="margin:0">今週</h2><span class="small num"><b>${wk.sets}</b> / ${g.weeklySets} 回・連続 <b>${streak()}</b> 日</span></div>
     ${weekStrip()}
     <div class="progress"><i style="width:${Math.min(100, (wk.sets / g.weeklySets) * 100)}%"></i></div>
   </section>
@@ -826,6 +889,7 @@ function viewPractice() {
   if (p.screen === "sections") {
     return `<h1>演習</h1>
     <p class="small muted">セクションを選んでください。問題は毎回 AI が新しく作ります。</p>
+    <button class="list-btn" data-a="go" data-size="word" data-v="vocab"><span class="sec-badge">語</span><span class="t"><b>単語カード</b><span class="small muted">5枚・約1分。覚えていない語ほど早く出ます</span></span><span class="chev">›</span></button>
     <div class="stack">${SECTION_KEYS.map((k) => {
       const e = estimate(k);
       return `<button class="list-btn" data-a="p-section" data-v="${k}"><span class="sec-badge">${SECTIONS[k].letter}</span><span class="t"><b>${SECTIONS[k].en}</b><span class="small muted">${SECTIONS[k].ja}・${TASKS.filter((t) => t.section === k).length}タスク</span></span><span class="small num muted">推定 ${bandStr(e)}</span><span class="chev">›</span></button>`;
@@ -882,27 +946,30 @@ function viewLoading() {
 function playbar() {
   const p = S.p; const t = TASK[p.taskId];
   const remain = t.mins * 60 - p.elapsed;
+  const isSet = (p.size || "set") === "set";
   return `<div class="playbar">
-    <div class="row"><span class="chip accent">${esc(DIFF[p.difficulty].ja)}</span>${p.source === "ai" ? '<span class="chip good">AI 生成</span>' : '<span class="chip">サンプル</span>'}${p.official ? '<span class="chip">公式準拠</span>' : ""}</div>
-    <div class="row"><span class="timer ${remain < 0 ? "over" : ""}" id="timer">${fmtTime(remain)}</span>${p.done ? "" : `<button class="btn sm" data-a="p-pause">${p.paused ? "再開" : "一時停止"}</button>`}</div>
+    <div class="row">${p.size && p.size !== "set" ? `<span class="chip accent">${SIZES[p.size].ja}</span>` : `<span class="chip accent">${esc(DIFF[p.difficulty].ja)}</span>`}${t.engine === "vocab" ? "" : p.source === "ai" ? '<span class="chip good">AI 生成</span>' : '<span class="chip">サンプル</span>'}${p.official ? '<span class="chip">公式準拠</span>' : ""}</div>
+    ${isSet ? `<div class="row"><span class="timer ${remain < 0 ? "over" : ""}" id="timer">${fmtTime(remain)}</span>${p.done ? "" : `<button class="btn sm" data-a="p-pause">${p.paused ? "再開" : "一時停止"}</button>`}</div>` : `<button class="btn sm ghost" data-a="p-done">やめる</button>`}
   </div>`;
 }
 
 function viewPlay() {
   const p = S.p; const t = TASK[p.taskId];
   const body = {
-    words: engWords, mcq: engMcq, listen: engListen, choose: engChoose, build: engBuild, write: engWrite, repeat: engRepeat, interview: engInterview,
+    words: engWords, mcq: engMcq, listen: engListen, choose: engChoose, build: engBuild, write: engWrite, repeat: engRepeat, interview: engInterview, vocab: engVocab,
   }[t.engine]();
+  const micro = p.size && p.size !== "set";
   return `${playbar()}
   ${p.notice ? `<div class="notice">${p.notice}</div>` : ""}
-  ${p.done && p.summary ? summaryCard() : ""}
+  ${p.done && p.summary && !micro ? summaryCard() : ""}
   <div><h1>${esc(t.en)}</h1></div>
-  ${body}`;
+  ${body}
+  ${p.done && p.summary && micro ? microFoot() : ""}`;
 }
 
 function summaryCard() {
   const p = S.p; const s = p.summary;
-  const next = recommendation(fitsCtx, [p.taskId]);
+  const next = pickNext("set", [p.taskId]);
   const n = todayCount();
   return `<section class="card" style="border-color:var(--accent)">
     <div class="row between wrap">
@@ -910,12 +977,30 @@ function summaryCard() {
       <span class="small muted num">所要 ${fmtTime(p.elapsed)}</span>
     </div>
     ${s.note ? `<p class="small muted">${esc(s.note)}</p>` : ""}
-    <div class="row"><span class="done-mark" style="width:32px;height:32px">${CHECK}</span><p class="small"><b>${n === 1 ? "今日の分は完了です。" : `今日 ${n} セット目。`}</b>連続 ${streak()} 日。</p></div>
+    <div class="row"><span class="done-mark" style="width:32px;height:32px">${CHECK}</span><p class="small"><b>${n === 1 ? "今日の分は完了です。" : `今日 ${n} 回目。`}</b>連続 ${streak()} 日。</p></div>
     ${weekStrip()}
-    ${next ? `<button class="btn primary block" data-a="quick" data-v="${next.task.id}">続けて1セット：${esc(next.task.en)}（${next.task.mins}分）</button>` : ""}
+    ${next ? `<button class="btn primary block" data-a="go" data-size="set" data-v="${next.task.id}">続けて1セット：${esc(next.task.en)}（${next.task.mins}分）</button>` : ""}
     <div class="grid2">
       <button class="btn" data-a="p-done">今日はここまで</button>
-      <button class="btn ghost" data-a="quick" data-v="${p.taskId}">同じタスクをもう1回</button>
+      <button class="btn ghost" data-a="go" data-size="set" data-v="${p.taskId}">同じタスクをもう1回</button>
+    </div>
+  </section>`;
+}
+
+/* 小さいサイズの終わり: 次の1つへ、が一番押しやすい */
+function microFoot() {
+  const p = S.p; const s = p.summary; const size = p.size;
+  const ok = s.total > 0 && s.correct === s.total;
+  const n = todayCount();
+  const up = SIZES[size].next;
+  const upRec = up ? pickNext(up) : null;
+  return `<section class="card" id="micro-foot" style="border-color:var(--accent)">
+    <div class="row">${ok ? `<span class="done-mark">${CHECK}</span>` : `<span class="x-mark">!</span>`}
+      <div><b>${p.taskId === "vocab" ? `${s.correct} / ${s.total} 語 覚えていました` : ok ? "正解" : s.total > 1 ? `${s.correct} / ${s.total}` : "解説を確認しましょう"}</b><p class="small muted">${n === 1 ? "今日の分は完了。" : `今日 ${n} 回目。`}連続 ${streak()} 日</p></div></div>
+    <button class="btn primary block big-start" data-a="go" data-size="${size}" data-v="">次の${SIZES[size].ja}へ</button>
+    <div class="grid2">
+      <button class="btn" data-a="p-done">ここまで</button>
+      ${upRec ? `<button class="btn ghost" data-a="go" data-size="${up}" data-v="${upRec.task.id}">${SIZES[up].ja}に上げる</button>` : '<span></span>'}
     </div>
   </section>`;
 }
@@ -937,6 +1022,27 @@ function mcqList(questions, prefix = "q") {
 function submitBtn(label, ready) {
   return S.p.done ? "" : `<button class="btn primary block" data-a="p-submit" ${ready ? "" : "disabled"}>${label}</button>`;
 }
+/* 進み具合のバー（1問ずつ） */
+function steps(n, cur, resultOf) {
+  if (n <= 1) return "";
+  return `<div class="steps" aria-label="${cur + 1} / ${n}">${Array.from({ length: n }, (_, i) => { const r = resultOf(i); return `<i class="${r === true ? "ok" : r === false ? "ng" : i === cur ? "on" : ""}"></i>`; }).join("")}<span>${cur + 1}/${n}</span></div>`;
+}
+function stepNav(n) {
+  const p = S.p;
+  if (p.done) return "";
+  if (p.step < n - 1) return `<button class="btn primary block" data-a="step-next">次へ</button>`;
+  return n === 1 ? "" : `<button class="btn primary block" data-a="p-submit">結果を見る</button>`;
+}
+/* 選択式の1問（タップした時点で正誤と解説を出す） */
+function stepMcq(questions) {
+  const p = S.p; const i = p.step; const q = questions[i]; const k = "q" + i;
+  const checked = p.ans[k] != null;
+  return `<section class="card">
+    ${steps(questions.length, i, (j) => (p.ans["q" + j] == null ? null : p.ans["q" + j] === questions[j].answer))}
+    <div class="q"><p class="q-stem">${esc(q.q)}</p>${optButtons(k, q, p.ans[k], checked)}${checked ? `<p class="expl">${p.ans[k] === q.answer ? "◯ " : "✕ "}${esc(q.explanation_ja || "")}</p>` : ""}</div>
+    ${checked ? stepNav(questions.length) : ""}
+  </section>`;
+}
 
 /* --- Complete the Words --- */
 function parseWords(text) {
@@ -957,19 +1063,22 @@ function engWords() {
     html += `<span class="blank">${esc(show)}<input id="ta-${k}" data-bind="ans.${k}" value="${esc(val)}" maxlength="${rest.length}" style="--n:${rest.length}" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="${bi + 1}番目の空欄（${rest.length}文字）" class="${cls}" ${p.done ? "disabled" : ""}>${fix}</span>`;
     bi++;
   });
-  return `<p class="small muted">段落を読み、欠けている文字を入力してください。各語の前半だけが表示されています。</p>
-  <section class="card"><p class="passage-title">${esc(d.title || "")}</p><p class="passage">${html}</p></section>
+  const micro = p.size === "sentence";
+  return `<p class="small muted">${micro ? "欠けている文字を入力してください。" : "段落を読み、欠けている文字を入力してください。各語の前半だけが表示されています。"}</p>
+  <section class="card">${d.title ? `<p class="passage-title">${esc(d.title)}</p>` : ""}<p class="passage">${html}</p></section>
   ${p.done && d.notes_ja ? `<p class="expl">${esc(d.notes_ja)}</p>` : ""}
-  ${submitBtn("採点する", true)}`;
+  ${submitBtn(micro ? "答え合わせ" : "採点する", true)}`;
 }
 
 /* --- 読解の選択式 --- */
+function passageCard(d) {
+  const boxed = !S.p.done && String(d.text).length > 500;
+  return `<section class="card">${d.genre ? `<span class="chip" style="justify-self:start">${esc(d.genre)}</span>` : ""}<p class="passage-title">${esc(d.title || "")}</p><div class="${boxed ? "passage-box" : ""}" ${boxed ? 'tabindex="0" aria-label="本文（スクロールできます）"' : ""}><p class="passage">${esc(d.text)}</p></div>${boxed ? '<p class="small muted">本文は枠の中でスクロールできます</p>' : ""}</section>`;
+}
 function engMcq() {
   const p = S.p; const d = p.set;
-  const ready = d.questions.every((_, i) => p.ans["q" + i] != null);
-  return `<section class="card">${d.genre ? `<span class="chip" style="justify-self:start">${esc(d.genre)}</span>` : ""}<p class="passage-title">${esc(d.title || "")}</p><p class="passage">${esc(d.text)}</p></section>
-  <section class="card">${mcqList(d.questions)}</section>
-  ${submitBtn("採点する", ready)}`;
+  if (p.done) return `${passageCard(d)}<section class="card">${mcqList(d.questions)}</section>`;
+  return `${passageCard(d)}${stepMcq(d.questions)}`;
 }
 
 /* --- 音声プレーヤー --- */
@@ -978,7 +1087,7 @@ function audioBox(key, lines, label) {
   const played = p.played[key];
   const playing = p.playing === key;
   const can = Speech.available();
-  const locked = played && !S.practiceMode && !p.done;
+  const locked = played && !S.practiceMode && !p.done && p.taskId !== "vocab";
   if (!can) {
     return `<div class="audio-box"><div class="notice"><b>この環境では音声を再生できません</b>　代わりにスクリプトを表示します。</div><div class="script">${lines.map((l) => `<p><b>${esc(l.speaker)}</b>${esc(l.text)}</p>`).join("")}</div></div>`;
   }
@@ -993,48 +1102,75 @@ function audioBox(key, lines, label) {
 function engListen() {
   const p = S.p; const d = p.set;
   const show = p.played.main || !Speech.available() || p.done;
-  const ready = d.questions.every((_, i) => p.ans["q" + i] != null);
   return `<section class="card">
     <p class="small muted">${esc(d.setting_ja || "")}</p>
     ${audioBox("main", d.lines, "音声を再生して始める")}
     ${p.done && Speech.available() ? `<details><summary class="small" style="font-weight:700;cursor:pointer">スクリプトを見る</summary><div class="script" style="margin-top:8px">${d.lines.map((l) => `<p><b>${esc(l.speaker)}</b>${esc(l.text)}</p>`).join("")}</div></details>` : ""}
   </section>
-  ${show ? `<section class="card">${mcqList(d.questions)}</section>${submitBtn("採点する", ready)}` : `<p class="small muted">音声を聞き終えると設問が表示されます。メモを取りながら聞きましょう。</p>`}`;
+  ${!show ? `<p class="small muted">音声を聞き終えると設問が表示されます。メモを取りながら聞きましょう。</p>` : p.done ? `<section class="card">${mcqList(d.questions)}</section>` : stepMcq(d.questions)}`;
 }
 
-/* --- Listen and Choose a Response --- */
+/* --- Listen and Choose a Response（1問ずつ） --- */
+function chooseCard(it, i, n) {
+  const p = S.p; const k = "q" + i; const q = { options: it.options, answer: it.answer };
+  const checked = p.ans[k] != null;
+  const d = p.set;
+  return `<section class="card">
+    ${!p.done ? steps(n, i, (j) => (p.ans["q" + j] == null ? null : p.ans["q" + j] === d.items[j].answer)) : n > 1 ? `<b class="num small">${i + 1} / ${n}</b>` : ""}
+    ${p.done ? "" : audioBox("u" + i, [{ speaker: it.speaker, text: it.utterance }], "発言を聞く")}
+    ${checked || !Speech.available() ? `<p class="bubble">${esc(it.utterance)}</p>` : ""}
+    ${optButtons(k, q, p.ans[k], checked)}
+    ${checked ? `<p class="expl">${p.ans[k] === it.answer ? "◯ " : "✕ "}${esc(it.explanation_ja || "")}</p>` : ""}
+    ${checked && !p.done ? stepNav(n) : ""}
+  </section>`;
+}
 function engChoose() {
-  const p = S.p; const d = p.set;
-  const ready = d.items.every((_, i) => p.ans["q" + i] != null);
+  const p = S.p; const d = p.set; const n = d.items.length;
   return `<p class="small muted">短い発言を聞き、最も自然な応答を選んでください。</p>
-  ${d.items.map((it, i) => {
-    const k = "q" + i; const q = { options: it.options, answer: it.answer };
-    return `<section class="card"><div class="row between"><b class="num">${i + 1} / ${d.items.length}</b>${audioBox("u" + i, [{ speaker: it.speaker, text: it.utterance }], "発言を聞く")}</div>
-      ${p.done || !Speech.available() ? `<p class="bubble">${esc(it.utterance)}</p>` : ""}
-      ${optButtons(k, q, p.ans[k], p.done)}
-      ${p.done ? `<p class="expl">${p.ans[k] === it.answer ? "◯ " : "✕ "}${esc(it.explanation_ja || "")}</p>` : ""}
-    </section>`;
-  }).join("")}
-  ${submitBtn("採点する", ready)}`;
+  ${p.done ? d.items.map((it, i) => chooseCard(it, i, n)).join("") : chooseCard(d.items[p.step], p.step, n)}`;
 }
 
-/* --- Build a Sentence --- */
+/* --- Build a Sentence（1問ずつ） --- */
+function buildOk(i) {
+  const p = S.p; const it = p.set.items[i]; const order = p.ans["s" + i] || [];
+  return order.map((ci) => p.banks[i][ci].idx).join("|") === it.chunks.map((_, j) => j).join("|");
+}
+function buildCard(it, i, n) {
+  const p = S.p; const order = p.ans["s" + i] || []; const bank = p.banks[i];
+  const checked = p.done || p.checked["s" + i];
+  const ok = checked && buildOk(i);
+  const full = order.length === it.chunks.length;
+  return `<section class="card">
+    ${!p.done ? steps(n, i, (j) => (p.checked["s" + j] ? buildOk(j) : null)) : n > 1 ? `<b class="num small">${i + 1} / ${n}</b>` : ""}
+    <p class="bubble">${esc(it.context)}</p>
+    <div class="slots ${checked ? (ok ? "ok" : "ng") : ""}" aria-label="あなたの返答">${order.length ? order.map((ci, pos) => `<button class="tile placed" data-a="unplace" data-i="${i}" data-v="${pos}" ${checked ? "disabled" : ""}>${esc(bank[ci].text)}</button>`).join("") : '<span class="small muted">ここに語句が並びます</span>'}</div>
+    ${checked ? "" : `<div class="bank">${bank.map((c, ci) => `<button class="tile" data-a="place" data-i="${i}" data-v="${ci}" ${order.includes(ci) ? "disabled" : ""}>${esc(c.text)}</button>`).join("")}</div>`}
+    ${checked ? `<p class="expl">${ok ? "◯ " : "✕ 正解：" + esc(it.chunks.join(" ")) + "<br>"}${esc(it.explanation_ja || "")}<br><span class="muted small">ダミー：${esc(it.distractor)}</span></p>` : `<button class="btn primary block" data-a="build-check" data-i="${i}" ${full ? "" : "disabled"}>答え合わせ</button>`}
+    ${checked && !p.done ? stepNav(n) : ""}
+  </section>`;
+}
 function engBuild() {
-  const p = S.p; const d = p.set;
-  const ready = d.items.every((it, i) => (p.ans["s" + i] || []).length === it.chunks.length);
+  const p = S.p; const d = p.set; const n = d.items.length;
   return `<p class="small muted">語句をタップして返答文を完成させてください。使わない語句が1つ混ざっています。</p>
-  ${d.items.map((it, i) => {
-    const order = p.ans["s" + i] || [];
-    const bank = p.banks[i];
-    const ok = p.done && order.map((ci) => bank[ci].idx).join("|") === it.chunks.map((_, j) => j).join("|");
-    return `<section class="card">
-      <p class="bubble">${esc(it.context)}</p>
-      <div class="slots ${p.done ? (ok ? "ok" : "ng") : ""}" aria-label="あなたの返答">${order.length ? order.map((ci, pos) => `<button class="tile placed" data-a="unplace" data-i="${i}" data-v="${pos}" ${p.done ? "disabled" : ""}>${esc(bank[ci].text)}</button>`).join("") : '<span class="small muted">ここに語句が並びます</span>'}</div>
-      ${p.done ? "" : `<div class="bank">${bank.map((c, ci) => `<button class="tile" data-a="place" data-i="${i}" data-v="${ci}" ${order.includes(ci) ? "disabled" : ""}>${esc(c.text)}</button>`).join("")}</div>`}
-      ${p.done ? `<p class="expl">${ok ? "◯ " : "✕ 正解：" + esc(it.chunks.join(" ")) + "<br>"}${esc(it.explanation_ja || "")}<br><span class="muted small">ダミー：${esc(it.distractor)}</span></p>` : ""}
-    </section>`;
-  }).join("")}
-  ${submitBtn("採点する", ready)}`;
+  ${p.done ? d.items.map((it, i) => buildCard(it, i, n)).join("") : buildCard(d.items[p.step], p.step, n)}`;
+}
+
+/* --- 単語カード --- */
+function engVocab() {
+  const p = S.p; const d = p.set; const n = d.cards.length;
+  if (p.done) {
+    return `<section class="card"><ul class="plain stack">${d.cards.map((c, i) => `<li class="row between"><span><b style="font-family:var(--font-text);font-size:16px">${esc(c.word)}</b> <span class="small">${esc(c.meaning_ja)}</span></span><span class="chip ${p.ans["v" + i] ? "good" : "bad"}">${p.ans["v" + i] ? "覚えてた" : "まだ"}</span></li>`).join("")}</ul><p class="small muted">「まだ」の語は10分後から、「覚えてた」の語は1日後・3日後…と間隔をあけて出します。</p></section>`;
+  }
+  const i = p.step; const c = d.cards[i]; const shown = p.revealed;
+  return `<section class="card">
+    ${steps(n, i, (j) => (p.ans["v" + j] == null ? null : p.ans["v" + j]))}
+    <div class="flash">
+      <span class="w">${esc(c.word)}</span>
+      ${S.ctx.sound !== "silent" && Speech.available() ? audioBox("w" + i, [{ speaker: "female", text: c.word }], "発音を聞く") : ""}
+      ${shown ? `<span class="m">${esc(c.meaning_ja)}</span>${c.example ? `<span class="ex">${esc(c.example)}</span>` : ""}` : `<span class="small muted">意味を思い浮かべてからタップ</span>`}
+    </div>
+    ${shown ? `<div class="grid2"><button class="btn" data-a="vocab-ans" data-v="0">まだ</button><button class="btn primary" data-a="vocab-ans" data-v="1">覚えてた</button></div>` : `<button class="btn primary block big-start" data-a="vocab-reveal">意味を見る</button>`}
+  </section>`;
 }
 
 /* --- Write an Email / Academic Discussion --- */
@@ -1104,12 +1240,12 @@ function engRepeat() {
     return `<section class="card"><h2>単語ごとの一致（LCS）</h2>${rows}<p class="small muted">緑＝言えた語、赤の取り消し線＝抜けた語。文字起こしからは発音や流暢さは分かりません。</p></section>`;
   }
   const cur = d.sentences[i];
-  return `<p class="small muted">${esc(d.setting_ja || "")}文を聞いて、そのまま繰り返してください。文は少しずつ長くなります。</p>
+  return `<p class="small muted">${esc(d.setting_ja || "")}文を聞いて、そのまま繰り返してください。${d.sentences.length > 1 ? "文は少しずつ長くなります。" : ""}</p>
   <section class="card">
-    <div class="row between"><b class="num">${i + 1} / 7</b><span class="small muted num">${tokens(cur).length} 語</span></div>
+    ${steps(d.sentences.length, i, () => null)}<span class="small muted num">${tokens(cur).length} 語</span>
     ${audioBox("r" + i, [{ speaker: "guide", text: cur }], "文を聞く")}
     ${speakInput("r" + i, "聞いた文を繰り返す")}
-    ${i < 6 ? `<button class="btn primary block" data-a="rep-next">次の文へ</button>` : `<button class="btn primary block" data-a="p-submit">採点する</button>`}
+    ${i < d.sentences.length - 1 ? `<button class="btn primary block" data-a="rep-next">次の文へ</button>` : `<button class="btn primary block" data-a="p-submit">${d.sentences.length === 1 ? "答え合わせ" : "採点する"}</button>`}
   </section>`;
 }
 
@@ -1224,13 +1360,13 @@ function newPractice(taskId, extra = {}) {
 }
 function startPlay(set, source, notice) {
   const p = S.p; const t = TASK[p.taskId];
-  Object.assign(p, { screen: "play", set, source, notice: notice || "", ans: {}, texts: {}, played: {}, playing: null, done: false, elapsed: 0, paused: false, step: 0, summary: null, feedback: null, scoring: false, qElapsed: 0, qRunning: false });
+  Object.assign(p, { screen: "play", set, source, notice: notice || "", ans: {}, texts: {}, played: {}, playing: null, done: false, elapsed: 0, paused: false, step: 0, checked: {}, revealed: false, summary: null, feedback: null, scoring: false, qElapsed: 0, qRunning: false });
   if (t.engine === "build") {
     p.banks = set.items.map((it, i) => shuffle([...it.chunks.map((c, j) => ({ text: c, idx: j })), { text: it.distractor, idx: -1 }], Date.now() % 1000 + i * 17 + 3));
   }
   window.scrollTo(0, 0);
   render();
-  setTimeout(() => prefetch(p.taskId), 1500);
+  if ((p.size || "set") === "set") setTimeout(() => prefetch(p.taskId), 1500);
 }
 
 function pickTopic() {
@@ -1260,6 +1396,7 @@ async function generateSet(taskId, difficulty, topic, official, signal) {
 /* 先読み: 解いている間に次の問題を作っておく（許可済みのときだけ。1件ずつ） */
 const inflight = new Set();
 function prefetch(taskId) {
+  if (!SCHEMA[taskId]) return;
   if (!ENV.sample || !ENV.sampleGranted || S.ready[taskId] || inflight.has(taskId) || inflight.size >= 1) return;
   const t = TASK[taskId]; const difficulty = autoDifficulty(t.section); const topic = pickTopic();
   inflight.add(taskId);
@@ -1269,8 +1406,8 @@ function prefetch(taskId) {
   }).catch(() => {}).finally(() => { inflight.delete(taskId); });
 }
 function prefetchDaily(exclude = []) {
-  const rec = recommendation(fitsCtx, exclude);
-  if (rec) prefetch(rec.task.id);
+  const rec = pickNext(S.ctx.size === "word" ? "sentence" : S.ctx.size, exclude);
+  if (rec && rec.task.id !== "vocab") prefetch(rec.task.id);
 }
 
 /* すぐ始める: 準備済み → それを出す / 初回 → 内蔵サンプル / それ以外 → 生成（待たずにサンプルも選べる） */
@@ -1278,7 +1415,7 @@ function quickStart(taskId) {
   const t = TASK[taskId];
   Speech.stop(); Dict.stop(); clearProgress();
   S.tab = "practice";
-  S.p = { screen: "setup", section: t.section, taskId, difficulty: autoDifficulty(t.section), topic: "", official: false };
+  S.p = { screen: "setup", section: t.section, taskId, difficulty: autoDifficulty(t.section), topic: "", official: false, size: "set" };
   const r = S.ready[taskId];
   if (r) {
     delete S.ready[taskId]; persist();
@@ -1290,6 +1427,55 @@ function quickStart(taskId) {
   S.usedSample[taskId] = true; persist();
   S.p.topicSaved = null;
   startPlay(SAMPLES[taskId], "sample", ENV.sample ? "<b>1回目は内蔵サンプルですぐ始めます。</b>2回目からは AI が作った新しい問題になります。" : "");
+}
+
+/* 1セットを「1文」「1問」に切り分けて在庫にする（AI の先読みセットがあればそれを使う） */
+function explode(taskId, set, src) {
+  if (taskId === "choose" || taskId === "build") return set.items.map((it) => ({ src, set: { items: [it] } }));
+  if (taskId === "repeat") return set.sentences.map((x) => ({ src, set: { setting_ja: set.setting_ja, sentences: [x] } }));
+  if (taskId === "words") {
+    const sents = String(set.text).match(/[^.!?]+[.!?]+/g) || [set.text];
+    return sents.slice(1).filter((x) => /\[\[/.test(x)).map((x) => ({ src, set: { title: "", text: x.trim(), notes_ja: set.notes_ja } }));
+  }
+  return set.questions.map((q) => ({ src, set: { ...set, questions: [q] } }));
+}
+function takeMicro(taskId) {
+  let pool = S.pools[taskId] || [];
+  if (!pool.length) {
+    const r = S.ready[taskId];
+    if (r) { delete S.ready[taskId]; pool = explode(taskId, r.set, "ai"); }
+    else pool = explode(taskId, SAMPLES[taskId], "sample");
+    pool = shuffle(pool, Date.now() % 997 + 1);
+  }
+  const item = pool.shift();
+  S.pools[taskId] = pool; persist();
+  if (pool.length <= 1) setTimeout(() => prefetch(taskId), 1500);
+  return item;
+}
+function vocabPack() {
+  const now = Date.now();
+  const all = [...S.vocab.filter((v) => v.meaning_ja), ...VOCAB_DECK];
+  const seen = new Set(); const uniq = all.filter((v) => !seen.has(v.word) && seen.add(v.word));
+  const due = uniq.filter((v) => (S.vbox[v.word]?.due ?? 0) <= now).sort((a, b) => (S.vbox[a.word]?.due ?? 0) - (S.vbox[b.word]?.due ?? 0));
+  const fresh = due.filter((v) => !S.vbox[v.word]); const review = due.filter((v) => S.vbox[v.word]);
+  const cards = [...review.slice(0, 3), ...shuffle(fresh, now % 991 + 1)].slice(0, 5);
+  return { cards: cards.length ? cards : shuffle(uniq, now % 991 + 1).slice(0, 5) };
+}
+const recentTasks = [];
+/* サイズに応じて始める。taskId が空なら次のおすすめを選ぶ */
+function startSize(size, taskId) {
+  if (size === "set") { quickStart(taskId || pickNext("set")?.task.id); return; }
+  Speech.stop(); Dict.stop(); clearProgress();
+  // 直近に出したタスクを避けて、いろいろな形式が回ってくるようにする
+  if (!taskId) taskId = pickNext(size, recentTasks.slice(-3))?.task.id;
+  recentTasks.push(taskId); if (recentTasks.length > 6) recentTasks.shift();
+  if (!taskId) return;
+  const t = TASK[taskId];
+  S.tab = "practice";
+  S.p = { screen: "setup", section: t.section, taskId, difficulty: t.section === "vocab" ? "standard" : autoDifficulty(t.section), topic: "", official: false, size };
+  if (size === "word") { startPlay(vocabPack(), "sample"); return; }
+  const m = takeMicro(taskId);
+  startPlay(m.set, m.src);
 }
 
 let genCtl = null;
@@ -1362,13 +1548,14 @@ function finish(result) {
   Speech.stop();
   clearProgress();
   setTimeout(() => { prefetch(p.taskId); prefetchDaily([p.taskId]); }, 0);
-  const attempt = { id: "a" + Date.now(), task: t.id, section: t.section, difficulty: p.difficulty, date: Date.now(), duration: p.elapsed, topic: p.topicSaved || null };
+  const attempt = { id: "a" + Date.now(), task: t.id, section: t.section, difficulty: p.difficulty, date: Date.now(), duration: p.elapsed, topic: p.topicSaved || null, size: p.size || "set" };
   if (result.band != null) attempt.band = result.band; else { attempt.correct = result.correct; attempt.total = result.total; }
   S.attempts.push(attempt);
   (result.mistakes || []).forEach((q, i) => S.mistakes.unshift({ id: attempt.id + "-" + i, task: t.id, q, date: Date.now(), resolved: false }));
   persist();
-  window.scrollTo(0, 0);
   render();
+  if ((p.size || "set") === "set") window.scrollTo(0, 0);
+  else document.getElementById("micro-foot")?.scrollIntoView({ block: "center", behavior: "smooth" });
 }
 
 function grade() {
@@ -1390,10 +1577,13 @@ function grade() {
     const correct = d.items.filter((it, i) => (p.ans["s" + i] || []).map((ci) => p.banks[i][ci].idx).join("|") === it.chunks.map((_, j) => j).join("|")).length;
     return finish({ correct, total: d.items.length });
   }
+  if (t.engine === "vocab") {
+    return finish({ correct: d.cards.filter((_, i) => p.ans["v" + i]).length, total: d.cards.length });
+  }
   if (t.engine === "repeat") {
     const rs = d.sentences.map((s, k) => lcsDiff(s, p.texts["r" + k] || ""));
     const avg = rs.reduce((s, r) => s + r.rate, 0) / rs.length;
-    return finish({ correct: rs.filter((r) => r.rate >= 0.8).length, total: 7, note: `単語の一致率 平均 ${Math.round(avg * 100)}%。80%以上の文を正解として数えています。` });
+    return finish({ correct: rs.filter((r) => r.rate >= 0.8).length, total: rs.length, note: `単語の一致率 平均 ${Math.round(avg * 100)}%。80%以上の文を正解として数えています。` });
   }
 }
 
@@ -1401,12 +1591,23 @@ function grade() {
 const A = {
   tab(el) { Speech.stop(); Dict.stop(); saveProgress(); if (S.p.screen === "play" && !S.p.done) S.p = { screen: "sections" }; S.tab = el.dataset.v; window.scrollTo(0, 0); render(); },
   quick(el) { quickStart(el.dataset.v); },
+  go(el) { startSize(el.dataset.size, el.dataset.v || ""); },
+  "step-next"() { Speech.stop(); Dict.stop(); S.p.step++; render(); window.scrollTo(0, 0); },
+  "build-check"(el) { const p = S.p; p.checked["s" + el.dataset.i] = true; if (p.set.items.length === 1) grade(); else render(); },
+  "vocab-reveal"() { S.p.revealed = true; render(); },
+  "vocab-ans"(el) {
+    const p = S.p; const i = p.step; const c = p.set.cards[i]; const ok = el.dataset.v === "1";
+    p.ans["v" + i] = ok;
+    const box = S.vbox[c.word]?.box ?? -1; const nb = ok ? Math.min(box + 1, 4) : 0;
+    S.vbox[c.word] = { box: nb, due: Date.now() + (ok ? [1, 3, 7, 14, 30][nb] * DAY : 10 * 60000) };
+    if (i < p.set.cards.length - 1) { p.step++; p.revealed = false; persist(); render(); } else grade();
+  },
   ctx(el) { S.ctx[el.dataset.k] = el.dataset.v; persist(); render(); if (ENV.sampleGranted) prefetchDaily(); },
   resume() { const r = S.inProgress; if (!r) return; S.tab = "practice"; S.p = { ...r.p, playing: null, paused: false }; window.scrollTo(0, 0); render(); },
   discard() { clearProgress(); render(); },
   "toggle-ask"() { S.askSetup = !S.askSetup; persist(); render(); },
   "p-sample-now"() { genCtl?.abort(); S.p.topicSaved = null; startPlay(SAMPLES[S.p.taskId], "sample"); },
-  "p-done"() { S.p = { screen: "sections" }; S.tab = "home"; window.scrollTo(0, 0); render(); },
+  "p-done"() { Speech.stop(); Dict.stop(); clearProgress(); S.p = { screen: "sections" }; S.tab = "home"; window.scrollTo(0, 0); render(); },
   "toggle-practice"() { S.practiceMode = !S.practiceMode; persist(); render(); },
   "p-section"(el) { S.p = { screen: "tasks", section: el.dataset.v }; render(); },
   "p-task"(el) { if (S.askSetup) { newPractice(el.dataset.v); S.p.difficulty = autoDifficulty(TASK[el.dataset.v].section); render(); } else quickStart(el.dataset.v); },
@@ -1429,7 +1630,12 @@ const A = {
   "p-score"() { Speech.stop(); Dict.stop(); score(); },
   "p-again"() { const p = S.p; newPractice(p.taskId, { difficulty: p.difficulty, topic: p.topic, official: p.official }); render(); },
   "p-home"() { S.p = { screen: "sections" }; render(); },
-  pick(el) { if (S.p.done) return; S.p.ans[el.dataset.q] = Number(el.dataset.v); render(); },
+  pick(el) {
+    const p = S.p; if (p.done || p.ans[el.dataset.q] != null) return;
+    p.ans[el.dataset.q] = Number(el.dataset.v);
+    const n = p.set.questions ? p.set.questions.length : p.set.items.length;
+    if (n === 1) grade(); else render();
+  },
   place(el) { const i = el.dataset.i; const k = "s" + i; S.p.ans[k] = [...(S.p.ans[k] || []), Number(el.dataset.v)]; render(); },
   unplace(el) { const k = "s" + el.dataset.i; const arr = (S.p.ans[k] || []).slice(); arr.splice(Number(el.dataset.v), 1); S.p.ans[k] = arr; render(); },
   play(el) {
@@ -1439,6 +1645,7 @@ const A = {
     let lines;
     if (key === "main") lines = d.lines;
     else if (key.startsWith("u")) { const it = d.items[Number(key.slice(1))]; lines = [{ speaker: it.speaker, text: it.utterance }]; }
+    else if (key.startsWith("w")) lines = [{ speaker: "female", text: d.cards[Number(key.slice(1))].word }];
     else if (key.startsWith("r")) lines = [{ speaker: "guide", text: d.sentences[Number(key.slice(1))] }];
     else if (key.startsWith("q")) { const i = Number(key.slice(1)); lines = i === 0 ? [{ speaker: "interviewer", text: d.intro }, { speaker: "interviewer", text: d.questions[0] }] : [{ speaker: "interviewer", text: d.questions[i] }]; }
     p.playing = key; render();
